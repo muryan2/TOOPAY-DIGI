@@ -3,150 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPOB Digiflazz Dynamic</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>TooPay Digi - PPOB Mandiri</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830284.png">
+
+    <!-- Bootstrap 5 CSS untuk Desain Rapi & Responsif -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <style>
-        :root {
-            --primary: #2E7D32;
-            --primary-light: #E8F5E9;
-            --text-main: #263238;
-            --bg-card: #ffffff;
-            --border-color: #CFD8DC;
-        }
-        
-        .digi-wrapper {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 8px;
-            background: #f8f9fa;
+        body { background-color: #f8f9fa; }
+        .service-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: none;
             border-radius: 12px;
         }
-
-        .section-header {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin: 12px 0 8px 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .grid-menu {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .menu-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 10px 4px;
-            text-align: center;
-            text-decoration: none;
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            min-height: 80px;
-        }
-
-        .menu-item:hover {
-            background: var(--primary-light);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .menu-item i {
-            font-size: 1.3rem;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        .menu-item span {
-            font-size: 0.68rem;
-            font-weight: 600;
-            line-height: 1.1;
-        }
-
-        @media (max-width: 380px) {
-            .grid-menu {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 6px;
-            }
+        .service-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
 
-    <div class="digi-wrapper">
-        <!-- Kategori Prabayar di Atas -->
-        <div class="section-header"><i class="fas fa-bolt"></i> Menu Prabayar</div>
-        <div class="grid-menu" id="gridPrabayar"></div>
+    <!-- Header / Navbar -->
+    <nav class="navbar navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">⚡ TooPay Digi PPOB</a>
+            <span class="badge bg-light text-primary">PWA Active</span>
+        </div>
+    </nav>
 
-        <!-- Kategori Pascabayar di Bawah -->
-        <div class="section-header" style="margin-top: 20px;"><i class="fas fa-file-invoice-dollar"></i> Menu Pascabayar</div>
-        <div class="grid-menu" id="gridPascabayar"></div>
+    <!-- Konten Utama -->
+    <div class="container my-4">
+        
+        <!-- Informasi Status PWA -->
+        <div class="alert alert-info shadow-sm d-flex justify-content-between align-items-center" role="alert">
+            <div>
+                <strong>Aplikasi Siap Dipasang!</strong> Buka menu titik tiga browser HP Anda lalu pilih <em>"Install App"</em> atau <em>"Add to Home Screen"</em>.
+            </div>
+        </div>
+
+        <!-- Bagian Prabayar -->
+        <h4 class="mb-3 text-secondary">📦 Layanan Prabayar (11 Layanan)</h4>
+        <div class="row g-3 mb-4">
+            <!-- 1. Pulsa -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">📱</div>
+                    <h6 class="fw-bold mb-0">Pulsa Reguler</h6>
+                </div>
+            </div>
+            <!-- 2. Paket Data -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">🌐</div>
+                    <h6 class="fw-bold mb-0">Paket Data</h6>
+                </div>
+            </div>
+            <!-- 3. Token PLN -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">⚡</div>
+                    <h6 class="fw-bold mb-0">Token PLN</h6>
+                </div>
+            </div>
+            <!-- 4. TopUp E-Wallet -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">💳</div>
+                    <h6 class="fw-bold mb-0">E-Wallet</h6>
+                </div>
+            </div>
+            <!-- 5. Voucher Game -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">🎮</div>
+                    <h6 class="fw-bold mb-0">Voucher Game</h6>
+                </div>
+            </div>
+            <!-- 6. Voucher Google Play -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">🤖</div>
+                    <h6 class="fw-bold mb-0">Google Play</h6>
+                </div>
+            </div>
+            <!-- 7. Pulsa Internasional -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">🌍</div>
+                    <h6 class="fw-bold mb-0">Pulsa Luar</h6>
+                </div>
+            </div>
+            <!-- 8. WiFi ID -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">📶</div>
+                    <h6 class="fw-bold mb-0">Voucher WiFi</h6>
+                </div>
+            </div>
+            <!-- 9. TV Berlangganan -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">📺</div>
+                    <h6 class="fw-bold mb-0">TV Prabayar</h6>
+                </div>
+            </div>
+            <!-- 10. Saldo Pertamina / E-Money -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">⛽</div>
+                    <h6 class="fw-bold mb-0">E-Money Lain</h6>
+                </div>
+            </div>
+            <!-- 11. Masa Aktif -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">⏳</div>
+                    <h6 class="fw-bold mb-0">Masa Aktif</h6>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bagian Pascabayar -->
+        <h4 class="mb-3 text-secondary">📄 Layanan Pascabayar (15 Layanan)</h4>
+        <div class="row g-3 mb-5">
+            <!-- Contoh Grid Pascabayar -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">💡</div>
+                    <h6 class="fw-bold mb-0">PLN Pascabayar</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">📞</div>
+                    <h6 class="fw-bold mb-0">Telkom / Speedy</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">💧</div>
+                    <h6 class="fw-bold mb-0">PDAM / Air</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">🩺</div>
+                    <h6 class="fw-bold mb-0">BPJS Kesehatan</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">🚗</div>
+                    <h6 class="fw-bold mb-0">Cicilan / Leasing</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">📡</div>
+                    <h6 class="fw-bold mb-0">TV Pascabayar</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">📱</div>
+                    <h6 class="fw-bold mb-0">HP Pascabayar</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">⛽</div>
+                    <h6 class="fw-bold mb-0">Gas PGN</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">🏢</div>
+                    <h6 class="fw-bold mb-0">PBB / Pajak Daerah</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">🎓</div>
+                    <h6 class="fw-bold mb-0">Pendidikan / Kuliah</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">🛒</div>
+                    <h6 class="fw-bold mb-0">E-Commerce Bill</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">🛡️</div>
+                    <h6 class="fw-bold mb-0">Asuransi Lain</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">📦</div>
+                    <h6 class="fw-bold mb-0">Kurir / Logistik</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">💳</div>
+                    <h6 class="fw-bold mb-0">Kartu Kredit</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card service-card p-3 text-center bg-white shadow-sm">
+                    <div class="fs-2 mb-2">📋</div>
+                    <h6 class="fw-bold mb-0">Tagihan Lainnya</h6>
+                </div>
+            </div>
+        </div>
+
     </div>
 
+    <!-- PWA Service Worker Registration -->
     <script>
-        const digiData = {
-            prabayar: [
-                { name: "Pulsa", icon: "fas fa-mobile-alt", url: "https://digiflash.olshopku.com/digital/373086" },
-                { name: "Paket Data", icon: "fas fa-wifi", url: "https://digiflash.olshopku.com/digital/372598" },
-                { name: "Games", icon: "fas fa-gamepad", url: "#" },
-                { name: "Voucher", icon: "fas fa-ticket-alt", url: "#" },
-                { name: "E-Money", icon: "fas fa-wallet", url: "https://digiflash.olshopku.com/digital/359528" },
-                { name: "PLN", icon: "fas fa-bolt", url: "https://digiflash.olshopku.com/digital/357104" },
-                { name: "SMS & Telp", icon: "fas fa-phone-alt", url: "https://digiflash.olshopku.com/digital/373726" },
-                { name: "Aktivasi V", icon: "fas fa-barcode", url: "#" },
-                { name: "TV", icon: "fas fa-tv", url: "#" },
-                { name: "Masa Aktif", icon: "fas fa-calendar-check", url: "https://digiflash.olshopku.com/digital/358209" },
-                { name: "Aktivasi Perdana", icon: "fas fa-sim-card", url: "#" }
-            ],
-            pascabayar: [
-                { name: "PLN Pasca", icon: "fas fa-bolt", url: "#" },
-                { name: "PDAM", icon: "fas fa-tint", url: "#" },
-                { name: "HP Pascabayar", icon: "fas fa-mobile", url: "#" },
-                { name: "Internet Pasca", icon: "fas fa-globe", url: "#" },
-                { name: "BPJS", icon: "fas fa-heartbeat", url: "#" },
-                { name: "Multifinance", icon: "fas fa-file-invoice", url: "#" },
-                { name: "PBB", icon: "fas fa-landmark", url: "#" },
-                { name: "GAS", icon: "fas fa-burn", url: "#" },
-                { name: "BY.U", icon: "fas fa-signal", url: "#" },
-                { name: "TV Pascabayar", icon: "fas fa-tv", url: "#" },
-                { name: "E-Money", icon: "fas fa-wallet", url: "#" },
-                { name: "Telkomsel OMNI", icon: "fas fa-broadcast-tower", url: "#" },
-                { name: "IndosatOnly4U", icon: "fas fa-network-wired", url: "#" },
-                { name: "TriCuanMax", icon: "fas fa-chart-line", url: "#" },
-                { name: "XL Axis Cuanku", icon: "fas fa-star", url: "#" }
-            ]
-        };
-
-        function renderGrids() {
-            const gp = document.getElementById('gridPrabayar');
-            gp.innerHTML = digiData.prabayar.map(item => `
-                <a href="${item.url}" class="menu-item">
-                    <i class="${item.icon}"></i>
-                    <span>${item.name}</span>
-                </a>
-            `).join('');
-
-            const gv = document.getElementById('gridPascabayar');
-            gv.innerHTML = digiData.pascabayar.map(item => `
-                <a href="${item.url}" class="menu-item">
-                    <i class="${item.icon}"></i>
-                    <span>${item.name}</span>
-                </a>
-            `).join('');
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('ServiceWorker registered! Scope: ', reg.scope))
+                    .catch(err => console.log('ServiceWorker registration failed: ', err));
+            });
         }
-
-        document.addEventListener('DOMContentLoaded', renderGrids);
     </script>
 </body>
-</html>
+    </html>
