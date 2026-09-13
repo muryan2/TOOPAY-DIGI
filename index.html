@@ -19,7 +19,6 @@
             --card-bg: #1e293b;
             --card-border: #334155;
             --text-main: #f8fafc;
-            --text-muted: #94a3b8;
             --accent-color: #38bdf8;
         }
 
@@ -34,42 +33,59 @@
             border-bottom: 1px solid var(--card-border);
         }
 
-        /* Kartu Layanan Adaptif & Tegas */
+        /* 4 Kolom Berjejer Presisi */
+        .grid-4 {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .grid-item {
+            width: calc(25% - 6px);
+        }
+
+        /* Kartu Layanan Tegas & Elegan */
         .service-card {
             background-color: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 12px;
+            border-radius: 10px;
             transition: all 0.2s ease-in-out;
             cursor: pointer;
+            padding: 10px 4px;
+            text-align: center;
             height: 100%;
         }
 
         .service-card:hover {
-            transform: translateY(-3px);
             border-color: var(--accent-color);
-            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.15);
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.15);
         }
 
         .service-icon { 
-            font-size: 1.75rem; 
-            margin-bottom: 6px; 
+            font-size: 1.5rem; 
+            margin-bottom: 4px; 
         }
 
         .service-title { 
-            font-size: 0.8rem; 
+            font-size: 0.65rem; 
             font-weight: 600; 
             color: var(--text-main);
-            margin-bottom: 0; 
+            margin-bottom: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .section-title {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--accent-color);
             letter-spacing: 0.5px;
             border-left: 3px solid var(--accent-color);
             padding-left: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+            margin-top: 15px;
         }
 
         .alert-custom {
@@ -94,44 +110,44 @@
     <div class="container my-3">
         
         <!-- Informasi Status PWA -->
-        <div class="alert alert-custom py-2 px-3 small mb-4 shadow-sm" role="alert">
-            <strong>🚀 Sistem Aktif:</strong> Buka menu titik tiga browser HP Anda lalu pilih <em>"Install App"</em> agar tampil seperti aplikasi native.
+        <div class="alert alert-custom py-2 px-3 small mb-3 shadow-sm" role="alert">
+            <strong>🚀 Sistem Aktif:</strong> Buka menu titik tiga browser HP Anda lalu pilih <em>"Install App"</em>.
         </div>
 
-        <!-- Bagian Prabayar (Adaptif: HP 4 Kolom, Tablet/PC Otomatis Menyesuaikan Lebih Banyak) -->
-        <div class="section-title">📦 LAYANAN PRABAYAR (11)</div>
-        <div class="row g-2 mb-4">
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">📱</div><div class="service-title">Pulsa</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">🌐</div><div class="service-title">Data</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">⚡</div><div class="service-title">Token PLN</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">💳</div><div class="service-title">E-Wallet</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">🎮</div><div class="service-title">Game</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">🤖</div><div class="service-title">G. Play</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">🌍</div><div class="service-title">Luar Negeri</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">📶</div><div class="service-title">WiFi ID</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">📺</div><div class="service-title">TV Prabayar</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">⛽</div><div class="service-title">E-Money</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">⏳</div><div class="service-title">Masa Aktif</div></div></div>
+        <!-- 1. BAGIAN PRABAYAR (Atas) -->
+        <div class="section-title">📦 LAYANAN PRABAYAR</div>
+        <div class="grid-4">
+            <div class="grid-item"><div class="service-card"><div class="service-icon">📱</div><div class="service-title">Pulsa</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🌐</div><div class="service-title">Data</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🎮</div><div class="service-title">Games</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🎟️</div><div class="service-title">Voucher</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">💳</div><div class="service-title">E-Money</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">⚡</div><div class="service-title">PLN</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">📞</div><div class="service-title">Paket SMS & TELP</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🔓</div><div class="service-title">Aktivasi Voucher</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">📺</div><div class="service-title">TV</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">⏳</div><div class="service-title">Mass Aktif</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">📶</div><div class="service-title">Aktivasi Perdana</div></div></div>
         </div>
 
-        <!-- Bagian Pascabayar -->
-        <div class="section-title">📄 LAYANAN PASCABAYAR (15)</div>
-        <div class="row g-2 mb-5">
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">💡</div><div class="service-title">PLN Pasca</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">📞</div><div class="service-title">Telkom</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">💧</div><div class="service-title">PDAM</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">🩺</div><div class="service-title">BPJS</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">🚗</div><div class="service-title">Leasing</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">📡</div><div class="service-title">TV Pasca</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">📱</div><div class="service-title">HP Pasca</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">⛽</div><div class="service-title">Gas PGN</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">🏢</div><div class="service-title">PBB / Pajak</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">🎓</div><div class="service-title">Pendidikan</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">🛒</div><div class="service-title">E-Commerce</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">🛡️</div><div class="service-title">Asuransi</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">📦</div><div class="service-title">Logistik</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">💳</div><div class="service-title">K. Kredit</div></div></div>
-            <div class="col-3 col-md-3 col-lg-2"><div class="card service-card p-2 text-center"><div class="service-icon">📋</div><div class="service-title">Lainnya</div></div></div>
+        <!-- 2. BAGIAN PASCABAYAR (Bawah) -->
+        <div class="section-title">📄 LAYANAN PASCABAYAR</div>
+        <div class="grid-4">
+            <div class="grid-item"><div class="service-card"><div class="service-icon">💡</div><div class="service-title">PLN Pascabayar</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">💧</div><div class="service-title">PDAM</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">📱</div><div class="service-title">HP Pascabayar</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🌐</div><div class="service-title">Internet Pascabayar</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🩺</div><div class="service-title">BPJS</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🚗</div><div class="service-title">Multifinance</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🏢</div><div class="service-title">PBB</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🔥</div><div class="service-title">GAS</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">📶</div><div class="service-title">BY.U</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">📡</div><div class="service-title">TV Pascabayar</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">💳</div><div class="service-title">E-Money</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🌟</div><div class="service-title">Telkomsel OMNI</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🟡</div><div class="service-title">IndosatOnly4U</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🔵</div><div class="service-title">TriCuanMax</div></div></div>
+            <div class="grid-item"><div class="service-card"><div class="service-icon">🟣</div><div class="service-title">XL Axis Cuanku</div></div></div>
         </div>
 
     </div>
