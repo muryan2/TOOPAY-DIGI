@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digiflash - PPOB Mandiri</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#064e3b">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830284.png">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-green: #064e3b;
+            --primary-green-dark: #022c22;
+            --accent-orange: #f97316;
+            --bg-body: #f1f5f9;
+        }
+
+        body { 
+            background-color: var(--bg-body); 
+            color: #1e293b;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            margin-bottom: 90px; /* Ruang untuk bottom nav */
+        }
+
+        /* Header Hijau */
+        .app-header {
+            background-color: var(--primary-green);
+            padding: 20px 15px 70px 15px;
+            color: white;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+
+        /* Kartu Konten Putih Melengkung ke Atas */
+        .main-card-container {
+            background: #ffffff;
+            border-radius: 24px 24px 0 0;
+            margin-top: -50px;
+            padding: 20px 12px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            min-height: 80vh;
+        }
+
+        /* Judul Section */
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+            margin-top: 15px;
+        }
+
+        /* Grid 4 Kolom Paksa */
+        .grid-4 {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .grid-item {
+            width: calc(25% - 6px);
+        }
+
+        /* Kartu Layanan */
+        .service-card {
+            background-color: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            padding: 10px 2px;
+            text-align: center;
+            height: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .service-card:active {
+            transform: scale(0.95);
+            background-color: #f8fafc;
+        }
+
+        .service-icon-img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            margin-bottom: 6px;
+        }
+
+        .service-title {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 0;
+            line-height: 1.1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Bottom Navigation Bar Oranye Melayang */
+        .bottom-nav {
+            position: fixed;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 450px;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            border-radius: 35px;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 5px;
+            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.65rem;
+            font-weight: 600;
+            opacity: 0.85;
+            transition: 0.2s;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            opacity: 1;
+            font-weight: 700;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            margin-bottom: 2px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Hijau -->
+    <div class="app-header">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold m-0 tracking-wide">DIGIFLASH</h5>
+            <span class="badge bg-light text-success fw-bold px-2 py-1" style="font-size: 0.65rem;">ONLINE</span>
+        </div>
+        <div class="text-center py-2">
+            <small class="text-white-50 d-block" style="font-size: 0.75rem;">Total Saldo</small>
+            <h4 class="fw-bold m-0" style="letter-spacing: 2px;">Rp •••••••</h4>
+        </div>
+    </div>
+
+    <!-- Kontainer Putih Utama -->
+    <div class="container px-2">
+        <div class="main-card-container">
+            
+            <!-- 1. BAGIAN PEMBELIAN (PRABAYAR) -->
+            <div class="section-title">Pembelian</div>
+            <div class="grid-4">
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" class="service-icon-img" alt="Pulsa">
+                        <div class="service-title">PULSA</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2819/2819714.png" class="service-icon-img" alt="Data">
+                        <div class="service-title">DATA</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="service-icon-img" alt="Games">
+                        <div class="service-title">GAMES</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/744/744988.png" class="service-icon-img" alt="Voucher">
+                        <div class="service-title">VOUCHER</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2830/2830284.png" class="service-icon-img" alt="E-Money">
+                        <div class="service-title">E-MONEY</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3103/3103437.png" class="service-icon-img" alt="PLN">
+                        <div class="service-title">PLN</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/542/542638.png" class="service-icon-img" alt="Paket SMS & TELP">
+                        <div class="service-title">TELP & SMS</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png" class="service-icon-img" alt="Aktivasi Voucher">
+                        <div class="service-title">AKTIVASI VOUCHER</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3076/3076117.png" class="service-icon-img" alt="TV">
+                        <div class="service-title">TV</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png" class="service-icon-img" alt="Mass Aktif">
+                        <div class="service-title">MASS AKTIF</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/869/869636.png" class="service-icon-img" alt="Aktivasi Perdana">
+                        <div class="service-title">AKTIVASI PERDANA</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. BAGIAN PEMBAYARAN (PASCABAYAR) -->
+            <div class="section-title mt-4">Pembayaran</div>
+            <div class="grid-4">
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3103/3103437.png" class="service-icon-img" alt="PLN Pascabayar">
+                        <div class="service-title">PLN PASCABAYAR</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3105/3105807.png" class="service-icon-img" alt="PDAM">
+                        <div class="service-title">PDAM</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" class="service-icon-img" alt="HP Pascabayar">
+                        <div class="service-title">HP PASCABAYAR</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1006/1006771.png" class="service-icon-img" alt="Internet Pascabayar">
+                        <div class="service-title">INTERNET PASCABAYAR</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2966/2966327.png" class="service-icon-img" alt="BPJS">
+                        <div class="service-title">BPJS</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2832/2832495.png" class="service-icon-img" alt="Multifinance">
+                        <div class="service-title">MULTIFINANCE</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2838/2838912.png" class="service-icon-img" alt="PBB">
+                        <div class="service-title">PBB</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2618/2618542.png" class="service-icon-img" alt="GAS">
+                        <div class="service-title">GAS</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/869/869636.png" class="service-icon-img" alt="BY.U">
+                        <div class="service-title">BY.U</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3076/3076117.png" class="service-icon-img" alt="TV Pascabayar">
+                        <div class="service-title">TV PASCABAYAR</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2830/2830284.png" class="service-icon-img" alt="E-Money">
+                        <div class="service-title">E-MONEY</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2819/2819714.png" class="service-icon-img" alt="Telkomsel OMNI">
+                        <div class="service-title">TELKOMSEL OMNI</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" class="service-icon-img" alt="IndosatOnly4U">
+                        <div class="service-title">INDOSAT ONLY4U</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="service-icon-img" alt="TriCuanMax">
+                        <div class="service-title">TRI CUAN MAX</div>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="service-card">
+                        <img src="https://cdn-icons-png.flaticon.com/512/744/744988.png" class="service-icon-img" alt="XL Axis Cuanku">
+                        <div class="service-title">XL AXIS CUANKU</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar Oranye -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            Home
+        </a>
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+            Notifikasi
+        </a>
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            Histori
+        </a>
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C13.45 11.9 13 12.5 13 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg>
+            Bantuan
+        </a>
+        <a href="#" class="nav-item">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            Akun
+        </a>
+    </div>
+
+</body>
+                      </html>
