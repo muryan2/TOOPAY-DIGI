@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPOB Digiflazz Dynamic</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #E8F5E9;
+            --text-main: #263238;
+            --bg-card: #ffffff;
+            --border-color: #CFD8DC;
+        }
+        
+        .digi-wrapper {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .section-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 12px 0 8px 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .grid-menu {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .menu-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 4px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            min-height: 80px;
+        }
+
+        .menu-item:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .menu-item i {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .menu-item span {
+            font-size: 0.68rem;
+            font-weight: 600;
+            line-height: 1.1;
+        }
+
+        @media (max-width: 380px) {
+            .grid-menu {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="digi-wrapper">
+        <!-- Kategori Prabayar di Atas -->
+        <div class="section-header"><i class="fas fa-bolt"></i> Menu Prabayar</div>
+        <div class="grid-menu" id="gridPrabayar"></div>
+
+        <!-- Kategori Pascabayar di Bawah -->
+        <div class="section-header" style="margin-top: 20px;"><i class="fas fa-file-invoice-dollar"></i> Menu Pascabayar</div>
+        <div class="grid-menu" id="gridPascabayar"></div>
+    </div>
+
+    <script>
+        const digiData = {
+            prabayar: [
+                { name: "Pulsa", icon: "fas fa-mobile-alt", url: "https://digiflash.olshopku.com/digital/373086" },
+                { name: "Paket Data", icon: "fas fa-wifi", url: "https://digiflash.olshopku.com/digital/372598" },
+                { name: "Games", icon: "fas fa-gamepad", url: "#" },
+                { name: "Voucher", icon: "fas fa-ticket-alt", url: "#" },
+                { name: "E-Money", icon: "fas fa-wallet", url: "https://digiflash.olshopku.com/digital/359528" },
+                { name: "PLN", icon: "fas fa-bolt", url: "https://digiflash.olshopku.com/digital/357104" },
+                { name: "SMS & Telp", icon: "fas fa-phone-alt", url: "https://digiflash.olshopku.com/digital/373726" },
+                { name: "Aktivasi V", icon: "fas fa-barcode", url: "#" },
+                { name: "TV", icon: "fas fa-tv", url: "#" },
+                { name: "Masa Aktif", icon: "fas fa-calendar-check", url: "https://digiflash.olshopku.com/digital/358209" },
+                { name: "Aktivasi Perdana", icon: "fas fa-sim-card", url: "#" }
+            ],
+            pascabayar: [
+                { name: "PLN Pasca", icon: "fas fa-bolt", url: "#" },
+                { name: "PDAM", icon: "fas fa-tint", url: "#" },
+                { name: "HP Pascabayar", icon: "fas fa-mobile", url: "#" },
+                { name: "Internet Pasca", icon: "fas fa-globe", url: "#" },
+                { name: "BPJS", icon: "fas fa-heartbeat", url: "#" },
+                { name: "Multifinance", icon: "fas fa-file-invoice", url: "#" },
+                { name: "PBB", icon: "fas fa-landmark", url: "#" },
+                { name: "GAS", icon: "fas fa-burn", url: "#" },
+                { name: "BY.U", icon: "fas fa-signal", url: "#" },
+                { name: "TV Pascabayar", icon: "fas fa-tv", url: "#" },
+                { name: "E-Money", icon: "fas fa-wallet", url: "#" },
+                { name: "Telkomsel OMNI", icon: "fas fa-broadcast-tower", url: "#" },
+                { name: "IndosatOnly4U", icon: "fas fa-network-wired", url: "#" },
+                { name: "TriCuanMax", icon: "fas fa-chart-line", url: "#" },
+                { name: "XL Axis Cuanku", icon: "fas fa-star", url: "#" }
+            ]
+        };
+
+        function renderGrids() {
+            const gp = document.getElementById('gridPrabayar');
+            gp.innerHTML = digiData.prabayar.map(item => `
+                <a href="${item.url}" class="menu-item">
+                    <i class="${item.icon}"></i>
+                    <span>${item.name}</span>
+                </a>
+            `).join('');
+
+            const gv = document.getElementById('gridPascabayar');
+            gv.innerHTML = digiData.pascabayar.map(item => `
+                <a href="${item.url}" class="menu-item">
+                    <i class="${item.icon}"></i>
+                    <span>${item.name}</span>
+                </a>
+            `).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', renderGrids);
+    </script>
+</body>
+</html>
