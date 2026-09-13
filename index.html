@@ -3,90 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digiflash PPOB Mandiri</title>
+    <title>TooPay Digi - PPOB Mandiri</title>
     
-    <!-- PWA Meta Tags -->
+    <!-- Konfigurasi PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2E7D32">
+    <meta name="theme-color" content="#1e293b">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2830/2830284.png">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
-            --primary: #2E7D32;
-            --primary-light: #E8F5E9;
-            --text-main: #263238;
-            --bg-card: #ffffff;
-            --border-color: #CFD8DC;
+            --brand-primary: #0f172a;
+            --brand-accent: #38bdf8;
+            --card-bg: #ffffff;
+            --border-clr: #e2e8f0;
+            --text-clr: #334155;
         }
 
         body {
-            background-color: #f8f9fa;
+            background-color: #f1f5f9;
             margin: 0;
             padding: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         }
         
-        .digi-wrapper {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 8px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            max-width: 500px;
+        .app-container {
+            max-width: 480px;
             margin: 0 auto;
+            padding: 12px;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
 
-        .section-header {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin: 12px 0 8px 4px;
+        .category-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--brand-primary);
+            margin: 16px 0 8px 4px;
             display: flex;
             align-items: center;
             gap: 6px;
-            text-transform: uppercase;
             letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
-        /* DIKUNCI 4 KOLOM TANPA AMPUN */
-        .grid-menu {
+        /* 4 Kolom Dikunci Presisi */
+        .service-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
-            margin-bottom: 15px;
         }
 
-        .menu-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
+        .service-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-clr);
+            border-radius: 12px;
             padding: 10px 2px;
             text-align: center;
             text-decoration: none;
-            color: var(--text-main);
+            color: var(--text-clr);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
             min-height: 75px;
+            box-sizing: border-box;
+            transition: transform 0.15s ease, border-color 0.15s ease;
         }
 
-        .menu-item:hover {
-            background: var(--primary-light);
-            border-color: var(--primary);
-            transform: translateY(-2px);
+        .service-box:active {
+            transform: scale(0.96);
+            background-color: #f8fafc;
         }
 
-        .menu-item i {
-            font-size: 1.2rem;
-            color: var(--primary);
-            margin-bottom: 4px;
+        .service-box i {
+            font-size: 1.25rem;
+            color: #0284c7;
+            margin-bottom: 5px;
         }
 
-        .menu-item span {
-            font-size: 0.60rem;
+        .service-box span {
+            font-size: 0.58rem;
             font-weight: 700;
             line-height: 1.1;
             white-space: nowrap;
@@ -94,87 +93,97 @@
             text-overflow: ellipsis;
             width: 100%;
         }
-
-        @media (max-width: 380px) {
-            .grid-menu {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 5px;
-            }
-        }
     </style>
 </head>
 <body>
 
-    <div class="digi-wrapper">
-        <!-- Kategori Prabayar di Atas -->
-        <div class="section-header"><i class="fas fa-bolt"></i> Menu Prabayar</div>
-        <div class="grid-menu" id="gridPrabayar"></div>
-
-        <!-- Kategori Pascabayar di Bawah -->
-        <div class="section-header" style="margin-top: 20px;"><i class="fas fa-file-invoice-dollar"></i> Menu Pascabayar</div>
-        <div class="grid-menu" id="gridPascabayar"></div>
+    <div class="app-container" id="appRoot">
+        <!-- Render otomatis via JavaScript murni -->
     </div>
 
     <script>
-        const digiData = {
-            prabayar: [
-                { name: "Pulsa", icon: "fas fa-mobile-alt", url: "https://digiflash.olshopku.com/digital/373086" },
-                { name: "Paket Data", icon: "fas fa-wifi", url: "https://digiflash.olshopku.com/digital/372598" },
-                { name: "Games", icon: "fas fa-gamepad", url: "#" },
-                { name: "Voucher", icon: "fas fa-ticket-alt", url: "#" },
-                { name: "E-Money", icon: "fas fa-wallet", url: "https://digiflash.olshopku.com/digital/359528" },
-                { name: "PLN", icon: "fas fa-bolt", url: "https://digiflash.olshopku.com/digital/357104" },
-                { name: "SMS & Telp", icon: "fas fa-phone-alt", url: "https://digiflash.olshopku.com/digital/373726" },
-                { name: "Aktivasi V", icon: "fas fa-barcode", url: "#" },
-                { name: "TV", icon: "fas fa-tv", url: "#" },
-                { name: "Masa Aktif", icon: "fas fa-calendar-check", url: "https://digiflash.olshopku.com/digital/358209" },
-                { name: "Aktivasi Perdana", icon: "fas fa-sim-card", url: "#" }
+        // Database Layanan Murni Tanpa Sisa Template Luar
+        const appDatabase = {
+            prepaid: [
+                { title: "Pulsa", icon: "fa-mobile-screen-button" },
+                { title: "Data", icon: "fa-wifi" },
+                { title: "Games", icon: "fa-gamepad" },
+                { title: "Voucher", icon: "fa-ticket" },
+                { title: "E-Money", icon: "fa-wallet" },
+                { title: "PLN", icon: "fa-bolt" },
+                { title: "Paket SMS & TELP", icon: "fa-phone-volume" },
+                { title: "Aktivasi Voucher", icon: "fa-qrcode" },
+                { title: "TV", icon: "fa-tv" },
+                { title: "Mass Aktif", icon: "fa-hourglass-half" },
+                { title: "Aktivasi Perdana", icon: "fa-sim-card" }
             ],
-            pascabayar: [
-                { name: "PLN Pasca", icon: "fas fa-bolt", url: "#" },
-                { name: "PDAM", icon: "fas fa-tint", url: "#" },
-                { name: "HP Pascabayar", icon: "fas fa-mobile", url: "#" },
-                { name: "Internet Pasca", icon: "fas fa-globe", url: "#" },
-                { name: "BPJS", icon: "fas fa-heartbeat", url: "#" },
-                { name: "Multifinance", icon: "fas fa-file-invoice", url: "#" },
-                { name: "PBB", icon: "fas fa-landmark", url: "#" },
-                { name: "GAS", icon: "fas fa-burn", url: "#" },
-                { name: "BY.U", icon: "fas fa-signal", url: "#" },
-                { name: "TV Pascabayar", icon: "fas fa-tv", url: "#" },
-                { name: "E-Money", icon: "fas fa-wallet", url: "#" },
-                { name: "Telkomsel OMNI", icon: "fas fa-broadcast-tower", url: "#" },
-                { name: "IndosatOnly4U", icon: "fas fa-network-wired", url: "#" },
-                { name: "TriCuanMax", icon: "fas fa-chart-line", url: "#" },
-                { name: "XL Axis Cuanku", icon: "fas fa-star", url: "#" }
+            postpaid: [
+                { title: "PLN Pascabayar", icon: "fa-lightbulb" },
+                { title: "PDAM", icon: "fa-faucet-drip" },
+                { title: "HP Pascabayar", icon: "fa-phone" },
+                { title: "Internet Pascabayar", icon: "fa-globe" },
+                { title: "BPJS", icon: "fa-suitcase-medical" },
+                { title: "Multifinance", icon: "fa-file-invoice-dollar" },
+                { title: "PBB", icon: "fa-landmark" },
+                { title: "GAS", icon: "fa-fire-flame-simple" },
+                { title: "BY.U", icon: "fa-signal" },
+                { title: "TV Pascabayar", icon: "fa-satellite-dish" },
+                { title: "E-Money", icon: "fa-credit-card" },
+                { title: "Telkomsel OMNI", icon: "fa-tower-broadcast" },
+                { title: "IndosatOnly4U", icon: "fa-network-wired" },
+                { title: "TriCuanMax", icon: "fa-chart-line" },
+                { title: "XL Axis Cuanku", icon: "fa-star" }
             ]
         };
 
-        function renderGrids() {
-            const gp = document.getElementById('gridPrabayar');
-            gp.innerHTML = digiData.prabayar.map(item => `
-                <a href="${item.url}" class="menu-item">
-                    <i class="${item.icon}"></i>
-                    <span>${item.name}</span>
-                </a>
-            `).join('');
+        function buildAppInterface() {
+            const container = document.getElementById('appRoot');
+            
+            let htmlContent = '';
 
-            const gv = document.getElementById('gridPascabayar');
-            gv.innerHTML = digiData.pascabayar.map(item => `
-                <a href="${item.url}" class="menu-item">
-                    <i class="${item.icon}"></i>
-                    <span>${item.name}</span>
-                </a>
-            `).join('');
+            // Render Prabayar
+            htmlContent += `<div class="category-title"><i class="fa-solid fa-bolt-lightning"></i> Layanan Prabayar</div>`;
+            htmlContent += `<div class="service-grid">`;
+            appDatabase.prepaid.forEach(item => {
+                htmlContent += `
+                    <a href="#" class="service-box" onclick="triggerService(event, '${item.title}')">
+                        <i class="fa-solid ${item.icon}"></i>
+                        <span>${item.title}</span>
+                    </a>
+                `;
+            });
+            htmlContent += `</div>`;
+
+            // Render Pascabayar
+            htmlContent += `<div class="category-title" style="margin-top: 22px;"><i class="fa-solid fa-file-invoice"></i> Layanan Pascabayar</div>`;
+            htmlContent += `<div class="service-grid">`;
+            appDatabase.postpaid.forEach(item => {
+                htmlContent += `
+                    <a href="#" class="service-box" onclick="triggerService(event, '${item.title}')">
+                        <i class="fa-solid ${item.icon}"></i>
+                        <span>${item.title}</span>
+                    </a>
+                `;
+            });
+            htmlContent += `</div>`;
+
+            container.innerHTML = htmlContent;
         }
 
-        document.addEventListener('DOMContentLoaded', renderGrids);
+        function triggerService(e, serviceName) {
+            e.preventDefault();
+            console.log("Layanan dipilih: " + serviceName);
+            // Tambahkan logika API / navigasi mandiri Anda di sini
+        }
 
-        // Registrasi Service Worker untuk PWA
+        document.addEventListener('DOMContentLoaded', buildAppInterface);
+
+        // Service Worker PWA Mandiri
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('SW Registered!', reg))
-                    .catch(err => console.log('SW Failed!', err));
+                    .then(() => console.log('PWA Ready'))
+                    .catch(err => console.log('PWA Error', err));
             });
         }
     </script>
