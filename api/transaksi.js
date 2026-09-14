@@ -17,8 +17,8 @@ export default async function handler(req, res) {
     // Ambil data Webshare dari Env Vercel
     const proxyUser = process.env.WEBSHARE_USER;
     const proxyPass = process.env.WEBSHARE_PASS;
-    const proxyPort = process.env.WEBSHARE_PORT || '80';
-    const proxyHost = 'p2.webshare.io'; // Host standar webshare, sesuaikan jika berbeda
+    const proxyPort = process.env.WEBSHARE_PORT; // Port khusus dari IP pilihan Anda (misal: 10000)
+    const proxyHost = process.env.WEBSHARE_IP_KHUSUS; // Nomor IP statis pilihan Anda (misal: 45.138.xx.xx)
 
     if (!username || !apiKey) {
         return res.status(500).json({ error: 'Konfigurasi server belum lengkap.' });
@@ -43,10 +43,13 @@ export default async function handler(req, res) {
         body: JSON.stringify(payload)
     };
 
-    if (proxyUser && proxyPass) {
+    // Mengunci jalur koneksi murni menggunakan 1 IP statis pilihan Anda
+    if (proxyUser && proxyPass && proxyHost && proxyPort) {
         const proxyUrl = `http://${proxyUser}:${proxyPass}@${proxyHost}:${proxyPort}`;
         // Menyisipkan dispatcher proxy ke dalam fetch bawaan Vercel
         fetchOptions.dispatcher = new ProxyAgent(proxyUrl);
+    } else {
+        return res.status(500).json({ error: 'Konfigurasi proxy Webshare di Env Vercel belum lengkap.' });
     }
 
     try {
