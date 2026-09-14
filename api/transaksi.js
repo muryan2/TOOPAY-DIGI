@@ -1,3 +1,7 @@
+// Menggunakan library bawaan Node.js (Tidak perlu npm install tambahan)
+const crypto = require('crypto');
+const { ProxyAgent } = require('undici'); 
+
 export default async function handler(req, res) {
     // Hanya izinkan metode POST untuk keamanan transaksi
     if (req.method !== 'POST') {
@@ -6,16 +10,21 @@ export default async function handler(req, res) {
 
     const { buyer_sku_code, customer_no, ref_id } = req.body;
 
-    // Ambil kredensial dari Environment Variables Vercel (Nanti kita setting di Vercel)
+    // Ambil kredensial dari Environment Variables Vercel
     const username = process.env.DIGIFLAZZ_USERNAME;
     const apiKey = process.env.DIGIFLAZZ_API_KEY;
+
+    // Ambil data Webshare dari Env Vercel
+    const proxyUser = process.env.WEBSHARE_USER;
+    const proxyPass = process.env.WEBSHARE_PASS;
+    const proxyPort = process.env.WEBSHARE_PORT || '80';
+    const proxyHost = 'p2.webshare.io'; // Host standar webshare, sesuaikan jika berbeda
 
     if (!username || !apiKey) {
         return res.status(500).json({ error: 'Konfigurasi server belum lengkap.' });
     }
 
-    // Buat signature MD5 sesuai standar Digiflazz (username + api_key + ref_id)
-    const crypto = require('crypto');
+    // Buat signature MD5 sesuai standar Digiflazz
     const sign = crypto.createHash('md5').update(username + apiKey + ref_id).digest('hex');
 
     const payload = {
@@ -24,19 +33,29 @@ export default async function handler(req, res) {
         customer_no: customer_no,
         ref_id: ref_id,
         sign: sign,
-        testing: true // Ubah ke 'false' jika nanti sudah siap transaksi uang asli
+        testing: true // Ubah ke false jika nanti sudah siap transaksi uang asli
     };
 
+    // Setup Agent Proxy untuk memaksa Vercel keluar lewat IP Webshare
+    let fetchOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    };
+
+    if (proxyUser && proxyPass) {
+        const proxyUrl = `http://${proxyUser}:${proxyPass}@${proxyHost}:${proxyPort}`;
+        // Menyisipkan dispatcher proxy ke dalam fetch bawaan Vercel
+        fetchOptions.dispatcher = new ProxyAgent(proxyUrl);
+    }
+
     try {
-        const apiResponse = await fetch('https://api.digiflazz.com/v1/transaction', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        // Tembak API Digiflazz dengan membawa opsi proxy
+        const apiResponse = await fetch('https://api.digiflazz.com/v1/transaction', fetchOptions);
 
         const result = await apiResponse.json();
         return res.status(200).json(result);
     } catch (error) {
-        return res.status(500).json({ error: 'Gagal terhubung ke server provider PPOB.' });
+        return res.status(500).json({ error: 'Gagal terhubung ke server provider PPOB: ' + error.message });
     }
 }
