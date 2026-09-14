@@ -445,7 +445,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT JAVASCRIPT UTuh -->
+    <!-- SCRIPT JAVASCRIPT UTUH -->
     <script>
         const appDatabase = {
             prepaid: [
@@ -561,14 +561,49 @@
             }
         }
 
-        function executeTransaction(e) {
+        // Eksekusi Guest Checkout yang terhubung ke Serverless API Vercel (/api/transaksi)
+        async function executeTransaction(e) {
             e.preventDefault();
             const service = document.getElementById('selectedService').value;
             const target = document.getElementById('targetInput').value;
             const whatsapp = document.getElementById('whatsappInput').value;
 
-            alert(`Guest Checkout Berhasil!\n\nLayanan: ${service}\nTujuan: ${target}\nNo WA: ${whatsapp}`);
-            closeModalDirect();
+            // Buat kode referensi unik transaksi
+            const refId = "TPG-" + Date.now();
+
+            // Indikator loading sederhana
+            const submitBtn = e.target.querySelector('.btn-submit');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Memproses Transaksi...";
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/transaksi', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        buyer_sku_code: "TEST_SKU", // Nanti disesuaikan dengan kode produk asli
+                        customer_no: target,
+                        ref_id: refId
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert(`Transaksi Berhasil Dikirim!\n\nLayanan: ${service}\nTujuan: ${target}\nNo WA: ${whatsapp}\nRef ID: ${refId}\nRespon: ${JSON.stringify(result.data || result)}`);
+                } else {
+                    alert(`Gagal: ${result.error || 'Terjadi kesalahan pada sistem.'}`);
+                }
+            } catch (error) {
+                alert("Koneksi bermasalah. Gagal terhubung ke server.");
+            } finally {
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+                closeModalDirect();
+            }
         }
 
         document.addEventListener('DOMContentLoaded', buildAppInterface);
@@ -580,4 +615,4 @@
         }
     </script>
 </body>
-  </html>
+</html>
