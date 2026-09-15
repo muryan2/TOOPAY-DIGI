@@ -127,7 +127,7 @@
             color: rgba(255, 255, 255, 0.15);
         }
 
-        /* Titik Navigasi Banner */
+        /* Titik Indikator Slider */
         .banner-dots {
             display: flex;
             justify-content: center;
@@ -150,7 +150,7 @@
             border-radius: 4px;
         }
 
-        /* --- KONTEN UTAMA --- */
+        /* --- KONTEN UTAMA & NAVIGASI HALAMAN --- */
         .category-title {
             font-size: 0.8rem;
             font-weight: 800;
@@ -163,7 +163,6 @@
             text-transform: uppercase;
         }
 
-        /* 4 Kolom Dikunci Presisi */
         .service-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -209,6 +208,170 @@
             width: 100%;
         }
 
+        /* --- GAYA HALAMAN SEKUNDER (SUB-KATEGORI & PRODUK) --- */
+        .sub-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--brand-primary);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 16px 0;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .sub-header i {
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .search-box-container {
+            position: relative;
+            margin-bottom: 14px;
+        }
+
+        .search-box-container input {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            border: 1px solid var(--border-clr);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 0.85rem;
+            outline: none;
+            background: #ffffff;
+        }
+
+        .search-box-container i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #78909c;
+        }
+
+        /* List Brand / Game Card style */
+        .brand-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .brand-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-clr);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .brand-card:active {
+            background: var(--brand-light);
+        }
+
+        .brand-card-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            color: var(--text-clr);
+            font-size: 0.9rem;
+        }
+
+        .brand-card-info i {
+            font-size: 1.4rem;
+            color: var(--brand-accent);
+        }
+
+        /* Product Nominal Card style */
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-clr);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            transition: border-color 0.2s;
+        }
+
+        .product-card:active {
+            border-color: var(--brand-accent);
+            background: var(--brand-light);
+        }
+
+        .product-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 0.85rem;
+            color: var(--text-clr);
+            font-weight: 700;
+        }
+
+        .product-info .price {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #d32f2f;
+        }
+
+        .product-action {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+            text-decoration: underline;
+        }
+
+        /* Input ID Pelanggan Box di Halaman Produk */
+        .input-target-box {
+            background: #ffffff;
+            border: 1px solid var(--border-clr);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .input-target-box label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--brand-primary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .input-target-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-clr);
+            border-radius: 8px;
+            padding: 0 10px;
+            background: #fafafa;
+        }
+
+        .input-target-wrapper i {
+            color: var(--brand-accent);
+            margin-right: 8px;
+        }
+
+        .input-target-wrapper input {
+            width: 100%;
+            padding: 10px 0;
+            border: none;
+            background: transparent;
+            font-size: 0.9rem;
+            outline: none;
+            font-weight: 600;
+        }
+
         /* --- BOTTOM NAVIGATION BAR --- */
         .bottom-nav {
             position: fixed;
@@ -252,7 +415,7 @@
             color: var(--brand-primary);
         }
 
-        /* Modal Fungsional Guest Checkout */
+        /* Modal Konfirmasi Checkout Akhir */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -356,49 +519,51 @@
 </head>
 <body>
 
-    <div class="app-container">
+    <div class="app-container" id="appContainer">
         
-        <!-- HEADER & BANNER PROMO -->
-        <div class="app-header">
-            <div class="header-top">
-                <h1 class="brand-title"><i class="fa-solid fa-bolt"></i> TooPay Digi</h1>
-                <div class="badge-guest">Guest Checkout</div>
-            </div>
+        <!-- HEADER & BANNER PROMO (Hanya tampil di Beranda) -->
+        <div id="homeHeaderContainer">
+            <div class="app-header">
+                <div class="header-top">
+                    <h1 class="brand-title"><i class="fa-solid fa-bolt"></i> TooPay Digi</h1>
+                    <div class="badge-guest">Guest Checkout</div>
+                </div>
 
-            <!-- Banner Slider -->
-            <div class="promo-banner-container" id="bannerSlider">
-                <div class="promo-slide active">
-                    <div class="promo-content">
-                        <h3>Promo Paket Data!</h3>
-                        <p>Nikmati harga khusus kuota internet semua operator tercepat dan otomatis 24 Jam.</p>
+                <!-- Banner Slider -->
+                <div class="promo-banner-container" id="bannerSlider">
+                    <div class="promo-slide active">
+                        <div class="promo-content">
+                            <h3>Promo Paket Data!</h3>
+                            <p>Nikmati harga khusus kuota internet semua operator tercepat dan otomatis 24 Jam.</p>
+                        </div>
+                        <i class="fa-solid fa-wifi promo-icon"></i>
                     </div>
-                    <i class="fa-solid fa-wifi promo-icon"></i>
-                </div>
-                <div class="promo-slide">
-                    <div class="promo-content">
-                        <h3>Layanan PLN & PPOB</h3>
-                        <p>Bayar tagihan bulanan listrik, air, dan BPJS tanpa ribet daftar akun.</p>
+                    <div class="promo-slide">
+                        <div class="promo-content">
+                            <h3>Layanan PLN & PPOB</h3>
+                            <p>Bayar tagihan bulanan listrik, air, dan BPJS tanpa ribet daftar akun.</p>
+                        </div>
+                        <i class="fa-solid fa-bolt promo-icon"></i>
                     </div>
-                    <i class="fa-solid fa-bolt promo-icon"></i>
-                </div>
-                <div class="promo-slide">
-                    <div class="promo-content">
-                        <h3>Top Up Games Termurah</h3>
-                        <p>Isi Diamond Mobile Legends, FF, dan game favoritmu instan detik ini juga.</p>
+                    <div class="promo-slide">
+                        <div class="promo-content">
+                            <h3>Top Up Games Termurah</h3>
+                            <p>Isi Diamond Mobile Legends, FF, dan game favoritmu instan detik ini juga.</p>
+                        </div>
+                        <i class="fa-solid fa-gamepad promo-icon"></i>
                     </div>
-                    <i class="fa-solid fa-gamepad promo-icon"></i>
                 </div>
-            </div>
 
-            <!-- Titik Indikator Slider -->
-            <div class="banner-dots" id="bannerDots">
-                <span class="dot active" onclick="currentSlide(0)"></span>
-                <span class="dot" onclick="currentSlide(1)"></span>
-                <span class="dot" onclick="currentSlide(2)"></span>
+                <!-- Titik Indikator Slider -->
+                <div class="banner-dots" id="bannerDots">
+                    <span class="dot active" onclick="currentSlide(0)"></span>
+                    <span class="dot" onclick="currentSlide(1)"></span>
+                    <span class="dot" onclick="currentSlide(2)"></span>
+                </div>
             </div>
         </div>
 
-        <!-- KONTEN GRID MENU -->
+        <!-- KONTEN DINAMIS UTAMA -->
         <div id="appRoot"></div>
 
     </div>
@@ -423,29 +588,29 @@
         </a>
     </div>
 
-    <!-- Modal Form Guest Checkout -->
+    <!-- Modal Konfirmasi WhatsApp & Eksekusi Pembayaran -->
     <div class="modal-overlay" id="actionModal" onclick="closeModal(event)">
         <div class="modal-sheet" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3 id="modalTitle">Form Transaksi</h3>
+                <h3 id="modalTitle">Konfirmasi Pesanan</h3>
                 <button class="close-btn" onclick="closeModalDirect()"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="transactionForm" onsubmit="executeTransaction(event)">
-                <input type="hidden" id="selectedService">
-                <div class="form-group">
-                    <label id="inputLabel">Nomor Tujuan / ID Pelanggan</label>
-                    <input type="text" id="targetInput" placeholder="Masukkan nomor / ID..." required autocomplete="off">
+                <div class="form-group" style="background: var(--brand-light); padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+                    <div style="font-size: 0.75rem; color: var(--brand-primary); font-weight: 700;">PRODUK DIPILIH:</div>
+                    <div id="summaryProduct" style="font-weight: 800; font-size: 0.9rem; color: var(--text-clr);"></div>
+                    <div id="summaryTarget" style="font-size: 0.8rem; color: #546e7a; margin-top: 2px;"></div>
                 </div>
                 <div class="form-group">
                     <label>Nomor WhatsApp (Untuk Bukti Transaksi)</label>
                     <input type="tel" id="whatsappInput" placeholder="Contoh: 08123456789" required autocomplete="off">
                 </div>
-                <button type="submit" class="btn-submit">Lanjutkan Pembayaran</button>
+                <button type="submit" class="btn-submit">Bayar Sekarang</button>
             </form>
         </div>
     </div>
 
-    <!-- SCRIPT JAVASCRIPT UTUH -->
+    <!-- SCRIPT JAVASCRIPT UTUH DENGAN ALUR MULTI-LANGKAH -->
     <script>
         const appDatabase = {
             prepaid: [
@@ -480,11 +645,49 @@
             ]
         };
 
+        // Data Mock / Acuan Brand berdasarkan Kategori (Bisa diperluas atau ditarik dari Excel/JSON nanti)
+        const brandDatabase = {
+            "Games": [
+                { name: "FREE FIRE", icon: "fa-gamepad" },
+                { name: "MOBILE LEGEND", icon: "fa-gamepad" },
+                { name: "GAME STEAM WALLET", icon: "fa-steam" },
+                { name: "GARENA", icon: "fa-shield-halved" },
+                { name: "GOOGLE PLAY", icon: "fa-google-play" },
+                { name: "HAGO", icon: "fa-face-smile" }
+            ],
+            "Pulsa": [
+                { name: "TELKOMSEL", icon: "fa-sim-card" },
+                { name: "INDOSAT", icon: "fa-sim-card" },
+                { name: "XL", icon: "fa-sim-card" },
+                { name: "AXIS", icon: "fa-sim-card" },
+                { name: "TRI", icon: "fa-sim-card" },
+                { name: "SMARTFREN", icon: "fa-sim-card" }
+            ]
+        };
+
+        // Data Mock Daftar Produk / Nominal per Brand (Acuan dari Sheet Anda)
+        const productDatabase = {
+            "FREE FIRE": [
+                { sku: "FF5", name: "TOP UP 5 DIAMOND", price: 1090 },
+                { sku: "FF10", name: "TOP UP 10 DIAMOND", price: 1900 },
+                { sku: "FF12", name: "TOP UP 12 DIAMOND", price: 2225 },
+                { sku: "FF20", name: "TOP UP 20 DIAMOND", price: 3907 },
+                { sku: "FF25", name: "TOP UP 25 DIAMOND", price: 4842 },
+                { sku: "FF30", name: "TOP UP 30 DIAMOND", price: 5350 }
+            ],
+            "MOBILE LEGEND": [
+                { sku: "ML10", name: "MOBILELEGEND - 10 Diamond", price: 2795 },
+                { sku: "ML100", name: "MOBILELEGEND - 100 Diamond", price: 20020 },
+                { sku: "ML1000", name: "MOBILELEGEND - 1000 Diamond", price: 180025 }
+            ]
+        };
+
         let slideIndex = 0;
         const slides = document.querySelectorAll('.promo-slide');
         const dots = document.querySelectorAll('.dot');
 
         function showSlide(index) {
+            if (slides.length === 0) return;
             slides.forEach(s => s.classList.remove('active'));
             dots.forEach(d => d.classList.remove('active'));
             
@@ -501,7 +704,9 @@
             showSlide(slideIndex + 1);
         }, 4000);
 
-        function buildAppInterface() {
+        // --- RENDER HALAMAN 1: BERANDA ---
+        function renderHome() {
+            document.getElementById('homeHeaderContainer').style.display = 'block';
             const container = document.getElementById('appRoot');
             let htmlContent = '';
 
@@ -509,7 +714,7 @@
             htmlContent += `<div class="service-grid">`;
             appDatabase.prepaid.forEach(item => {
                 htmlContent += `
-                    <div class="service-box" onclick="openServiceModal('${item.title}', '${item.placeholder}')">
+                    <div class="service-box" onclick="handleCategoryClick('${item.title}', '${item.placeholder}')">
                         <i class="fa-solid ${item.icon}"></i>
                         <span>${item.title}</span>
                     </div>
@@ -521,7 +726,7 @@
             htmlContent += `<div class="service-grid">`;
             appDatabase.postpaid.forEach(item => {
                 htmlContent += `
-                    <div class="service-box" onclick="openServiceModal('${item.title}', '${item.placeholder}')">
+                    <div class="service-box" onclick="handleCategoryClick('${item.title}', '${item.placeholder}')">
                         <i class="fa-solid ${item.icon}"></i>
                         <span>${item.title}</span>
                     </div>
@@ -532,23 +737,136 @@
             container.innerHTML = htmlContent;
         }
 
+        // --- HANDLER KLIK KATEGORI (MENU UTAMA KE SUB-KATEGORI/BRAND) ---
+        function handleCategoryClick(categoryName, placeholderText) {
+            document.getElementById('homeHeaderContainer').style.display = 'none';
+            const container = document.getElementById('appRoot');
+
+            // Cek apakah kategori punya daftar brand khusus (seperti Games / Pulsa)
+            const brands = brandDatabase[categoryName] || [
+                { name: categoryName + " UMUM", icon: "fa-layer-group" }
+            ];
+
+            let htmlContent = `
+                <div class="sub-header">
+                    <i class="fa-solid fa-arrow-left" onclick="renderHome()"></i>
+                    <span>${categoryName.toUpperCase()}</span>
+                </div>
+                <div class="search-box-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Cari produk ${categoryName} disini..." id="brandSearch" onkeyup="filterBrands()">
+                </div>
+                <div class="brand-list" id="brandListContainer">
+            `;
+
+            brands.forEach(b => {
+                htmlContent += `
+                    <div class="brand-card" onclick="handleBrandClick('${b.name}', '${placeholderText}')">
+                        <div class="brand-card-info">
+                            <i class="fa-solid ${b.icon}"></i>
+                            <span>${b.name}</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color: #78909c;"></i>
+                    </div>
+                `;
+            });
+
+            htmlContent += `</div>`;
+            container.innerHTML = htmlContent;
+        }
+
+        // --- RENDER HALAMAN 3: PILIH NOMINAL & INPUT ID PELANGGAN (SEPERTI SCREENSHOT KEDUA) ---
+        function handleBrandClick(brandName, placeholderText) {
+            document.getElementById('homeHeaderContainer').style.display = 'none';
+            const container = document.getElementById('appRoot');
+
+            // Ambil daftar produk untuk brand ini (jika belum ada, buatkan produk demo dari acuan)
+            const products = productDatabase[brandName] || [
+                { sku: "DEMO_1", name: brandName + " Reguler 1", price: 10000 },
+                { sku: "DEMO_2", name: brandName + " Reguler 2", price: 20000 }
+            ];
+
+            let htmlContent = `
+                <div class="sub-header">
+                    <i class="fa-solid fa-arrow-left" onclick="handleCategoryClick('Games', 'User ID / Player ID Games')"></i>
+                    <span>${brandName}</span>
+                </div>
+
+                <!-- Bagian Input ID Pelanggan di Atas -->
+                <div class="input-target-box">
+                    <label>Input ID Pelanggan / Tujuan</label>
+                    <div class="input-target-wrapper">
+                        <i class="fa-solid fa-user-pen"></i>
+                        <input type="text" id="targetInput" placeholder="${placeholderText}" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="category-title" style="margin: 12px 0 8px 4px;">Pilih Nominal Produk</div>
+                <div class="product-list">
+            `;
+
+            products.forEach(p => {
+                htmlContent += `
+                    <div class="product-card" onclick="openCheckoutModal('${p.sku}', '${p.name}', ${p.price})">
+                        <div class="product-info">
+                            <h4>${p.name}</h4>
+                            <p class="price">Rp. ${p.price.toLocaleString('id-ID')}</p>
+                        </div>
+                        <span class="product-action">Pilih <i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                `;
+            });
+
+            htmlContent += `</div>`;
+            container.innerHTML = htmlContent;
+        }
+
+        // Filter pencarian brand
+        function filterBrands() {
+            let input = document.getElementById('brandSearch').value.toLowerCase();
+            let cards = document.querySelectorAll('.brand-card');
+            cards.forEach(card => {
+                let text = card.innerText.toLowerCase();
+                card.style.display = text.includes(input) ? "flex" : "none";
+            });
+        }
+
         function navClick(e, menuName) {
             e.preventDefault();
             document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
             e.currentTarget.classList.add('active');
-            alert("Menu Navigasi dipilih: " + menuName);
+            if(menuName === 'Beranda') {
+                renderHome();
+            } else {
+                alert("Menu Navigasi dipilih: " + menuName);
+            }
         }
 
-        function openServiceModal(serviceName, placeholderText) {
-            document.getElementById('selectedService').value = serviceName;
-            document.getElementById('modalTitle').innerText = "Checkout: " + serviceName;
-            document.getElementById('inputLabel').innerText = "Masukkan " + placeholderText;
-            document.getElementById('targetInput').placeholder = placeholderText;
-            document.getElementById('targetInput').value = '';
-            document.getElementById('whatsappInput').value = '';
+        // Variabel penyimpanan sementara transaksi aktif
+        let activeTransactionData = {};
+
+        function openCheckoutModal(sku, productName, price) {
+            const targetInputVal = document.getElementById('targetInput') ? document.getElementById('targetInput').value.trim() : '';
             
+            if(!targetInputVal) {
+                alert("Mohon masukkan Nomor Tujuan / ID Pelanggan terlebih dahulu di kolom atas!");
+                document.getElementById('targetInput').focus();
+                return;
+            }
+
+            activeTransactionData = {
+                sku: sku,
+                productName: productName,
+                price: price,
+                target: targetInputVal
+            };
+
+            document.getElementById('summaryProduct').innerText = `${productName} (Rp ${price.toLocaleString('id-ID')})`;
+            document.getElementById('summaryTarget').innerText = `Tujuan / ID: ${targetInputVal}`;
+            document.getElementById('whatsappInput').value = '';
+
             document.getElementById('actionModal').classList.add('active');
-            setTimeout(() => document.getElementById('targetInput').focus(), 150);
+            setTimeout(() => document.getElementById('whatsappInput').focus(), 150);
         }
 
         function closeModalDirect() {
@@ -561,17 +879,12 @@
             }
         }
 
-        // Eksekusi Guest Checkout yang terhubung ke Serverless API Vercel (/api/transaksi)
+        // Eksekusi Guest Checkout yang terhubung ke Serverless API Cloudflare Pages (/api/transaksi)
         async function executeTransaction(e) {
             e.preventDefault();
-            const service = document.getElementById('selectedService').value;
-            const target = document.getElementById('targetInput').value;
             const whatsapp = document.getElementById('whatsappInput').value;
-
-            // Buat kode referensi unik transaksi
             const refId = "TPG-" + Date.now();
 
-            // Indikator loading sederhana
             const submitBtn = e.target.querySelector('.btn-submit');
             const originalText = submitBtn.innerText;
             submitBtn.innerText = "Memproses Transaksi...";
@@ -584,8 +897,8 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        buyer_sku_code: "TEST_SKU", // Nanti disesuaikan dengan kode produk asli
-                        customer_no: target,
+                        buyer_sku_code: activeTransactionData.sku,
+                        customer_no: activeTransactionData.target,
                         ref_id: refId
                     })
                 });
@@ -593,20 +906,21 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    alert(`Transaksi Berhasil Dikirim!\n\nLayanan: ${service}\nTujuan: ${target}\nNo WA: ${whatsapp}\nRef ID: ${refId}\nRespon: ${JSON.stringify(result.data || result)}`);
+                    alert(`Transaksi Berhasil Dikirim!\n\nProduk: ${activeTransactionData.productName}\nTujuan: ${activeTransactionData.target}\nNo WA: ${whatsapp}\nRef ID: ${refId}\nRespon: ${JSON.stringify(result.data || result)}`);
+                    closeModalDirect();
+                    renderHome(); // Kembali ke beranda setelah sukses
                 } else {
                     alert(`Gagal: ${result.error || 'Terjadi kesalahan pada sistem.'}`);
                 }
             } catch (error) {
-                alert("Koneksi bermasalah. Gagal terhubung ke server.");
+                alert("Koneksi bermasalah. Gagal terhubung ke server backend.");
             } finally {
                 submitBtn.innerText = originalText;
                 submitBtn.disabled = false;
-                closeModalDirect();
             }
         }
 
-        document.addEventListener('DOMContentLoaded', buildAppInterface);
+        document.addEventListener('DOMContentLoaded', renderHome);
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
