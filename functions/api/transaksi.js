@@ -1,26 +1,43 @@
-async function bayarProdukPrabayar() {
-  const dataPesanan = {
-    buyer_sku_code: "s5", // Contoh: Telkomsel 5rb
-    customer_no: "081234567890", // Nomor HP tujuan
-    ref_id: "TOOPAY-" + Date.now() // Kode unik transaksi anti-ganda
-  };
+import crypto from 'node:crypto';
 
-  try {
-    const response = await fetch('/api/transaksi', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dataPesanan)
-    });
+export async function onRequestPost(context) {
+    try {
+        const { request, env } = context;
+        const inputData = await request.json();
 
-    const hasil = await response.json();
-    console.log("Respons Transaksi:", hasil);
-    
-    if (hasil.success) {
-      alert("Transaksi berhasil diproses!");
-    } else {
-      alert("Gagal: " + (hasil.data?.data?.message || hasil.message));
+        const username = env.DIGIFLAZZ_USERNAME;
+        const secretKey = env.DIGIFLAZZ_KEY;
+        const buyerSkuCode = inputData.buyer_sku_code;
+        const customerNo = inputData.customer_no;
+        const refId = inputData.ref_id;
+
+        const signData = username + secretKey + refId;
+        const signature = crypto.createHash('md5').update(signData).digest('hex');
+
+        const digiflazzResponse = await fetch('https://api.digiflazz.com/v1/transaction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: username,
+                buyer_sku_code: buyerSkuCode,
+                customer_no: customerNo,
+                ref_id: refId,
+                sign: signature,
+                testing: false
+            })
+        });
+
+        const result = await digiflazzResponse.json();
+
+        return Response.json({
+            status: "success",
+            data: result
+        }, { status: 200 });
+
+    } catch (err) {
+        return Response.json({
+            status: "error",
+            error: err.message || "Gagal menyambungkan ke server backend."
+        }, { status: 500 });
     }
-  } catch (error) {
-    console.error("Error:", error);
-  }
 }
