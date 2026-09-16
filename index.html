@@ -415,7 +415,7 @@
             color: var(--brand-primary);
         }
 
-        /* Modal Konfirmasi Checkout Akhir */
+        /* Modal Detail Produk / Konfirmasi Langsung (Tanpa No WhatsApp) dengan Warna Flat Tema Utama */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -473,35 +473,28 @@
             cursor: pointer;
         }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--text-clr);
-            margin-bottom: 5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-clr);
-            border-radius: 8px;
-            box-sizing: border-box;
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
             font-size: 0.9rem;
-            outline: none;
         }
 
-        .form-group input:focus {
-            border-color: var(--brand-accent);
+        .detail-row .label {
+            color: #546e7a;
+            font-weight: 600;
+        }
+
+        .detail-row .val {
+            color: var(--text-clr);
+            font-weight: 700;
+            text-align: right;
         }
 
         .btn-submit {
             width: 100%;
-            background: var(--brand-primary);
+            background: var(--brand-primary); /* Flat warna utama aplikasi (#1b5e20) */
             color: white;
             border: none;
             padding: 12px;
@@ -510,6 +503,7 @@
             font-size: 0.9rem;
             cursor: pointer;
             transition: background 0.2s;
+            margin-top: 10px;
         }
 
         .btn-submit:hover {
@@ -521,7 +515,7 @@
 
     <div class="app-container" id="appContainer">
         
-        <!-- HEADER & BANNER PROMO (Hanya tampil di Beranda) -->
+        <!-- HEADER & BANNER PROMO -->
         <div id="homeHeaderContainer">
             <div class="app-header">
                 <div class="header-top">
@@ -588,29 +582,36 @@
         </a>
     </div>
 
-    <!-- Modal Konfirmasi WhatsApp & Eksekusi Pembayaran -->
+    <!-- Modal Detail Produk / Konfirmasi Pembayaran (Tanpa WhatsApp, Warna Flat Konsisten) -->
     <div class="modal-overlay" id="actionModal" onclick="closeModal(event)">
         <div class="modal-sheet" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3 id="modalTitle">Konfirmasi Pesanan</h3>
                 <button class="close-btn" onclick="closeModalDirect()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form id="transactionForm" onsubmit="executeTransaction(event)">
-                <div class="form-group" style="background: var(--brand-light); padding: 10px; border-radius: 8px; margin-bottom: 12px;">
-                    <div style="font-size: 0.75rem; color: var(--brand-primary); font-weight: 700;">PRODUK DIPILIH:</div>
-                    <div id="summaryProduct" style="font-weight: 800; font-size: 0.9rem; color: var(--text-clr);"></div>
-                    <div id="summaryTarget" style="font-size: 0.8rem; color: #546e7a; margin-top: 2px;"></div>
+            <div id="modalBodyContent">
+                <div class="detail-row">
+                    <span class="label">Provider</span>
+                    <span class="val" id="detailProvider">-</span>
                 </div>
-                <div class="form-group">
-                    <label>Nomor WhatsApp (Untuk Bukti Transaksi)</label>
-                    <input type="tel" id="whatsappInput" placeholder="Contoh: 08123456789" required autocomplete="off">
+                <div class="detail-row">
+                    <span class="label">Harga</span>
+                    <span class="val" id="detailHarga" style="color: #d32f2f;">-</span>
                 </div>
-                <button type="submit" class="btn-submit">Bayar Sekarang</button>
-            </form>
+                <div class="detail-row">
+                    <span class="label">Tujuan</span>
+                    <span class="val" id="detailTujuan">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Deskripsi</span>
+                    <span class="val" id="detailDeskripsi">Tidak ada Deskripsi</span>
+                </div>
+                <button type="button" class="btn-submit" onclick="executeTransaction()">Bayar Sekarang</button>
+            </div>
         </div>
     </div>
 
-    <!-- SCRIPT JAVASCRIPT UTUH DENGAN ALUR MULTI-LANGKAH -->
+    <!-- SCRIPT JAVASCRIPT -->
     <script>
         const appDatabase = {
             prepaid: [
@@ -645,16 +646,7 @@
             ]
         };
 
-        // Data Mock / Acuan Brand berdasarkan Kategori (Bisa diperluas atau ditarik dari Excel/JSON nanti)
         const brandDatabase = {
-            "Games": [
-                { name: "FREE FIRE", icon: "fa-gamepad" },
-                { name: "MOBILE LEGEND", icon: "fa-gamepad" },
-                { name: "GAME STEAM WALLET", icon: "fa-steam" },
-                { name: "GARENA", icon: "fa-shield-halved" },
-                { name: "GOOGLE PLAY", icon: "fa-google-play" },
-                { name: "HAGO", icon: "fa-face-smile" }
-            ],
             "Pulsa": [
                 { name: "TELKOMSEL", icon: "fa-sim-card" },
                 { name: "INDOSAT", icon: "fa-sim-card" },
@@ -662,23 +654,24 @@
                 { name: "AXIS", icon: "fa-sim-card" },
                 { name: "TRI", icon: "fa-sim-card" },
                 { name: "SMARTFREN", icon: "fa-sim-card" }
+            ],
+            "Games": [
+                { name: "FREE FIRE", icon: "fa-gamepad" },
+                { name: "MOBILE LEGEND", icon: "fa-gamepad" },
+                { name: "GAME STEAM WALLET", icon: "fa-steam" },
+                { name: "GARENA", icon: "fa-shield-halved" },
+                { name: "GOOGLE PLAY", icon: "fa-google-play" }
             ]
         };
 
-        // Data Mock Daftar Produk / Nominal per Brand (Acuan dari Sheet Anda)
         const productDatabase = {
-            "FREE FIRE": [
-                { sku: "FF5", name: "TOP UP 5 DIAMOND", price: 1090 },
-                { sku: "FF10", name: "TOP UP 10 DIAMOND", price: 1900 },
-                { sku: "FF12", name: "TOP UP 12 DIAMOND", price: 2225 },
-                { sku: "FF20", name: "TOP UP 20 DIAMOND", price: 3907 },
-                { sku: "FF25", name: "TOP UP 25 DIAMOND", price: 4842 },
-                { sku: "FF30", name: "TOP UP 30 DIAMOND", price: 5350 }
+            "TELKOMSEL": [
+                { sku: "TSL1", name: "TELKOMSEL 1.000", price: 2050, desc: "Pulsa Telkomsel 1.000 Aktif" },
+                { sku: "TSL5", name: "TELKOMSEL MASA AKTIF 5 HARI", price: 3075, desc: "Penambahan masa aktif 5 hari" }
             ],
-            "MOBILE LEGEND": [
-                { sku: "ML10", name: "MOBILELEGEND - 10 Diamond", price: 2795 },
-                { sku: "ML100", name: "MOBILELEGEND - 100 Diamond", price: 20020 },
-                { sku: "ML1000", name: "MOBILELEGEND - 1000 Diamond", price: 180025 }
+            "FREE FIRE": [
+                { sku: "FF5", name: "TOP UP 5 DIAMOND", price: 1090, desc: "Instant Free Fire 5 Diamonds" },
+                { sku: "FF10", name: "TOP UP 10 DIAMOND", price: 1900, desc: "Instant Free Fire 10 Diamonds" }
             ]
         };
 
@@ -704,7 +697,6 @@
             showSlide(slideIndex + 1);
         }, 4000);
 
-        // --- RENDER HALAMAN 1: BERANDA ---
         function renderHome() {
             document.getElementById('homeHeaderContainer').style.display = 'block';
             const container = document.getElementById('appRoot');
@@ -737,14 +729,12 @@
             container.innerHTML = htmlContent;
         }
 
-        // --- HANDLER KLIK KATEGORI (MENU UTAMA KE SUB-KATEGORI/BRAND) ---
         function handleCategoryClick(categoryName, placeholderText) {
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
 
-            // Cek apakah kategori punya daftar brand khusus (seperti Games / Pulsa)
             const brands = brandDatabase[categoryName] || [
-                { name: categoryName + " UMUM", icon: "fa-layer-group" }
+                { name: categoryName.toUpperCase(), icon: "fa-layer-group" }
             ];
 
             let htmlContent = `
@@ -775,44 +765,41 @@
             container.innerHTML = htmlContent;
         }
 
-        // --- RENDER HALAMAN 3: PILIH NOMINAL & INPUT ID PELANGGAN (SEPERTI SCREENSHOT KEDUA) ---
         function handleBrandClick(brandName, placeholderText) {
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
 
-            // Ambil daftar produk untuk brand ini (jika belum ada, buatkan produk demo dari acuan)
             const products = productDatabase[brandName] || [
-                { sku: "DEMO_1", name: brandName + " Reguler 1", price: 10000 },
-                { sku: "DEMO_2", name: brandName + " Reguler 2", price: 20000 }
+                { sku: "DEMO_1", name: brandName + " Reguler 1", price: 10000, desc: "Produk reguler andalan" },
+                { sku: "DEMO_2", name: brandName + " Reguler 2", price: 20000, desc: "Produk reguler cepat" }
             ];
 
             let htmlContent = `
                 <div class="sub-header">
-                    <i class="fa-solid fa-arrow-left" onclick="handleCategoryClick('Games', 'User ID / Player ID Games')"></i>
+                    <i class="fa-solid fa-arrow-left" onclick="handleCategoryClick('Pulsa', 'Nomor HP (Contoh: 08123456789)')"></i>
                     <span>${brandName}</span>
                 </div>
 
-                <!-- Bagian Input ID Pelanggan di Atas -->
                 <div class="input-target-box">
-                    <label>Input ID Pelanggan / Tujuan</label>
+                    <label>Input Nomor Tujuan</label>
                     <div class="input-target-wrapper">
-                        <i class="fa-solid fa-user-pen"></i>
-                        <input type="text" id="targetInput" placeholder="${placeholderText}" autocomplete="off">
+                        <i class="fa-solid fa-mobile-screen"></i>
+                        <input type="text" id="targetInput" placeholder="${placeholderText}" value="085290900062" autocomplete="off">
                     </div>
                 </div>
 
-                <div class="category-title" style="margin: 12px 0 8px 4px;">Pilih Nominal Produk</div>
+                <div class="category-title" style="margin: 12px 0 8px 4px;">Pilihan Produk ${brandName}</div>
                 <div class="product-list">
             `;
 
             products.forEach(p => {
                 htmlContent += `
-                    <div class="product-card" onclick="openCheckoutModal('${p.sku}', '${p.name}', ${p.price})">
+                    <div class="product-card" onclick="openCheckoutModal('${brandName}', '${p.sku}', '${p.name}', ${p.price}, '${p.desc || ''}')">
                         <div class="product-info">
                             <h4>${p.name}</h4>
-                            <p class="price">Rp. ${p.price.toLocaleString('id-ID')}</p>
+                            <p class="price">Rp ${p.price.toLocaleString('id-ID')}</p>
                         </div>
-                        <span class="product-action">Pilih <i class="fa-solid fa-chevron-right"></i></span>
+                        <span class="product-action">Lihat Detail</span>
                     </div>
                 `;
             });
@@ -821,7 +808,6 @@
             container.innerHTML = htmlContent;
         }
 
-        // Filter pencarian brand
         function filterBrands() {
             let input = document.getElementById('brandSearch').value.toLowerCase();
             let cards = document.querySelectorAll('.brand-card');
@@ -842,14 +828,13 @@
             }
         }
 
-        // Variabel penyimpanan sementara transaksi aktif
         let activeTransactionData = {};
 
-        function openCheckoutModal(sku, productName, price) {
+        function openCheckoutModal(brandName, sku, productName, price, desc) {
             const targetInputVal = document.getElementById('targetInput') ? document.getElementById('targetInput').value.trim() : '';
             
             if(!targetInputVal) {
-                alert("Mohon masukkan Nomor Tujuan / ID Pelanggan terlebih dahulu di kolom atas!");
+                alert("Mohon masukkan Nomor Tujuan terlebih dahulu!");
                 document.getElementById('targetInput').focus();
                 return;
             }
@@ -861,12 +846,13 @@
                 target: targetInputVal
             };
 
-            document.getElementById('summaryProduct').innerText = `${productName} (Rp ${price.toLocaleString('id-ID')})`;
-            document.getElementById('summaryTarget').innerText = `Tujuan / ID: ${targetInputVal}`;
-            document.getElementById('whatsappInput').value = '';
+            document.getElementById('modalTitle').innerText = productName;
+            document.getElementById('detailProvider').innerText = brandName;
+            document.getElementById('detailHarga').innerText = `Rp ${price.toLocaleString('id-ID')}`;
+            document.getElementById('detailTujuan').innerText = targetInputVal;
+            document.getElementById('detailDeskripsi').innerText = desc || "Tidak ada Deskripsi";
 
             document.getElementById('actionModal').classList.add('active');
-            setTimeout(() => document.getElementById('whatsappInput').focus(), 150);
         }
 
         function closeModalDirect() {
@@ -879,13 +865,9 @@
             }
         }
 
-        // Eksekusi Guest Checkout yang terhubung ke Serverless API Cloudflare Pages (/api/transaksi)
-        async function executeTransaction(e) {
-            e.preventDefault();
-            const whatsapp = document.getElementById('whatsappInput').value;
+        async function executeTransaction() {
             const refId = "TPG-" + Date.now();
-
-            const submitBtn = e.target.querySelector('.btn-submit');
+            const submitBtn = document.querySelector('.modal-sheet .btn-submit');
             const originalText = submitBtn.innerText;
             submitBtn.innerText = "Memproses Transaksi...";
             submitBtn.disabled = true;
@@ -906,9 +888,9 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    alert(`Transaksi Berhasil Dikirim!\n\nProduk: ${activeTransactionData.productName}\nTujuan: ${activeTransactionData.target}\nNo WA: ${whatsapp}\nRef ID: ${refId}\nRespon: ${JSON.stringify(result.data || result)}`);
+                    alert(`Transaksi Berhasil Dikirim!\n\nProduk: ${activeTransactionData.productName}\nTujuan: ${activeTransactionData.target}\nRef ID: ${refId}\nRespon: ${JSON.stringify(result.data || result)}`);
                     closeModalDirect();
-                    renderHome(); // Kembali ke beranda setelah sukses
+                    renderHome();
                 } else {
                     alert(`Gagal: ${result.error || 'Terjadi kesalahan pada sistem.'}`);
                 }
@@ -921,12 +903,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', renderHome);
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(() => {});
-            });
-        }
     </script>
 </body>
-</html>
+    </html>
