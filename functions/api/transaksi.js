@@ -1,12 +1,9 @@
-import crypto from 'node:crypto';
-
 export async function onRequestPost(context) {
     try {
         const { request, env } = context;
         const inputData = await request.json();
 
         const username = env.DIGIFLAZZ_USERNAME;
-        // Menggunakan API Key (Production/Development Key) untuk signature transaksi, BUKAN Secret Key webhook
         const apiKey = env.DIGIFLAZZ_API_KEY; 
         
         const buyerSkuCode = inputData.buyer_sku_code;
@@ -17,9 +14,13 @@ export async function onRequestPost(context) {
             return Response.json({ status: "error", error: "Konfigurasi Username atau API Key Digiflazz belum terbaca di environment." }, { status: 500 });
         }
 
-        // Rumus signature resmi Digiflazz untuk transaksi: username + apiKey + refId
+        // Membuat MD5 Signature menggunakan Web Crypto API (aman untuk Cloudflare Worker)
         const signData = username + apiKey + refId;
-        const signature = crypto.createHash('md5').update(signData).digest('hex');
+        const encoder = new TextEncoder();
+        const dataBuffer = encoder.encode(signData);
+        const hashBuffer = await crypto.subtle.digest('MD5', dataBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
         const digiflazzResponse = await fetch('https://api.digiflazz.com/v1/transaction', {
             method: 'POST',
