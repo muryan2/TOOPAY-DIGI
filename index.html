@@ -13,6 +13,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Library QR Code Lokal untuk QRIS Dinamis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
     <style>
         :root {
             --brand-primary: #1b5e20;      /* Hijau Tua Tegas */
@@ -251,7 +254,6 @@
             color: #78909c;
         }
 
-        /* List Brand / Game Card style */
         .brand-list {
             display: flex;
             flex-direction: column;
@@ -288,7 +290,6 @@
             color: var(--brand-accent);
         }
 
-        /* Product Nominal Card style */
         .product-card {
             background: var(--card-bg);
             border: 1px solid var(--border-clr);
@@ -329,7 +330,6 @@
             text-decoration: underline;
         }
 
-        /* Input ID Pelanggan Box di Halaman Produk */
         .input-target-box {
             background: #ffffff;
             border: 1px solid var(--border-clr);
@@ -415,7 +415,7 @@
             color: var(--brand-primary);
         }
 
-        /* Modal Detail Produk / Konfirmasi Langsung (Tanpa No WhatsApp) dengan Warna Flat Tema Utama */
+        /* Modal Konfirmasi & Pembayaran */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -444,6 +444,8 @@
             box-sizing: border-box;
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-overlay.active .modal-sheet {
@@ -473,28 +475,35 @@
             cursor: pointer;
         }
 
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
+        .form-group {
+            margin-bottom: 15px;
         }
 
-        .detail-row .label {
-            color: #546e7a;
-            font-weight: 600;
-        }
-
-        .detail-row .val {
-            color: var(--text-clr);
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
             font-weight: 700;
-            text-align: right;
+            color: var(--text-clr);
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-clr);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--brand-accent);
         }
 
         .btn-submit {
             width: 100%;
-            background: var(--brand-primary); /* Flat warna utama aplikasi (#1b5e20) */
+            background: var(--brand-primary);
             color: white;
             border: none;
             padding: 12px;
@@ -503,7 +512,6 @@
             font-size: 0.9rem;
             cursor: pointer;
             transition: background 0.2s;
-            margin-top: 10px;
         }
 
         .btn-submit:hover {
@@ -582,31 +590,42 @@
         </a>
     </div>
 
-    <!-- Modal Detail Produk / Konfirmasi Pembayaran (Tanpa WhatsApp, Warna Flat Konsisten) -->
+    <!-- Modal Konfirmasi & Pembayaran -->
     <div class="modal-overlay" id="actionModal" onclick="closeModal(event)">
         <div class="modal-sheet" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3 id="modalTitle">Konfirmasi Pesanan</h3>
                 <button class="close-btn" onclick="closeModalDirect()"><i class="fa-solid fa-xmark"></i></button>
             </div>
+            
             <div id="modalBodyContent">
-                <div class="detail-row">
-                    <span class="label">Provider</span>
-                    <span class="val" id="detailProvider">-</span>
+                <div class="form-group" style="background: var(--brand-light); padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+                    <div style="font-size: 0.75rem; color: var(--brand-primary); font-weight: 700;" id="summaryLabel">PRODUK DIPILIH:</div>
+                    <div id="summaryProduct" style="font-weight: 800; font-size: 0.9rem; color: var(--text-clr);"></div>
+                    <div id="summaryTarget" style="font-size: 0.8rem; color: #546e7a; margin-top: 2px;"></div>
                 </div>
-                <div class="detail-row">
-                    <span class="label">Harga</span>
-                    <span class="val" id="detailHarga" style="color: #d32f2f;">-</span>
+
+                <!-- Area Khusus Pascabayar (Hasil Inquiry) -->
+                <div id="postpaidDetails" style="display: none; margin-bottom: 15px; padding: 10px; border: 1px dashed var(--brand-accent); border-radius: 8px; font-size: 0.85rem; background: #fafafa;">
+                    <div>Nama Pelanggan: <b id="pCustomerName">-</b></div>
+                    <div>Total Tagihan: <b id="pAmount" style="color: #d32f2f;">-</b></div>
                 </div>
-                <div class="detail-row">
-                    <span class="label">Tujuan</span>
-                    <span class="val" id="detailTujuan">-</span>
+
+                <!-- Area QRIS Dinamis Lokal -->
+                <div id="qrisSection" style="display: none; text-align: center; margin-bottom: 15px;">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--brand-primary); margin-bottom: 8px;">SCAN QRIS UNTUK PEMBAYARAN</div>
+                    <div id="qrisImageContainer" style="background: #fff; padding: 10px; display: inline-block; border: 1px solid var(--border-clr); border-radius: 8px;">
+                        <div id="qrcodeTarget"></div>
+                    </div>
+                    <div style="font-size: 0.7rem; color: #78909c; margin-top: 5px;">QRIS otomatis menyesuaikan nominal tagihan</div>
                 </div>
-                <div class="detail-row">
-                    <span class="label">Deskripsi</span>
-                    <span class="val" id="detailDeskripsi">Tidak ada Deskripsi</span>
+
+                <div class="form-group">
+                    <label>Nomor WhatsApp (Untuk Bukti Transaksi & Resi)</label>
+                    <input type="tel" id="whatsappInput" placeholder="Contoh: 08123456789" required autocomplete="off">
                 </div>
-                <button type="button" class="btn-submit" onclick="executeTransaction()">Bayar Sekarang</button>
+
+                <button type="button" class="btn-submit" id="modalSubmitBtn" onclick="processAction()">Lanjutkan Pembayaran</button>
             </div>
         </div>
     </div>
@@ -638,15 +657,18 @@
                 { title: "GAS", icon: "fa-fire-flame-simple", placeholder: "ID Pelanggan GAS Negara" },
                 { title: "BY.U", icon: "fa-signal", placeholder: "Nomor By.U Pascabayar" },
                 { title: "TV Pascabayar", icon: "fa-satellite-dish", placeholder: "Nomor Pelanggan TV Kabel Pasca" },
-                { title: "E-Money", icon: "fa-credit-card", placeholder: "Nomor Akun E-Money" },
-                { title: "Telkomsel OMNI", icon: "fa-tower-broadcast", placeholder: "Nomor Pelanggan OMNI" },
-                { title: "IndosatOnly4U", icon: "fa-network-wired", placeholder: "Nomor Pelanggan Indosat" },
-                { title: "TriCuanMax", icon: "fa-chart-line", placeholder: "Nomor Pelanggan Tri" },
-                { title: "XL Axis Cuanku", icon: "fa-star", placeholder: "Nomor Pelanggan XL / Axis" }
+                { title: "E-Money", icon: "fa-credit-card", placeholder: "Nomor Akun E-Money" }
             ]
         };
 
         const brandDatabase = {
+            "Games": [
+                { name: "FREE FIRE", icon: "fa-gamepad" },
+                { name: "MOBILE LEGEND", icon: "fa-gamepad" },
+                { name: "GAME STEAM WALLET", icon: "fa-steam" },
+                { name: "GARENA", icon: "fa-shield-halved" },
+                { name: "GOOGLE PLAY", icon: "fa-google-play" }
+            ],
             "Pulsa": [
                 { name: "TELKOMSEL", icon: "fa-sim-card" },
                 { name: "INDOSAT", icon: "fa-sim-card" },
@@ -654,24 +676,22 @@
                 { name: "AXIS", icon: "fa-sim-card" },
                 { name: "TRI", icon: "fa-sim-card" },
                 { name: "SMARTFREN", icon: "fa-sim-card" }
-            ],
-            "Games": [
-                { name: "FREE FIRE", icon: "fa-gamepad" },
-                { name: "MOBILE LEGEND", icon: "fa-gamepad" },
-                { name: "GAME STEAM WALLET", icon: "fa-steam" },
-                { name: "GARENA", icon: "fa-shield-halved" },
-                { name: "GOOGLE PLAY", icon: "fa-google-play" }
             ]
         };
 
         const productDatabase = {
-            "TELKOMSEL": [
-                { sku: "TSL1", name: "TELKOMSEL 1.000", price: 2050, desc: "Pulsa Telkomsel 1.000 Aktif" },
-                { sku: "TSL5", name: "TELKOMSEL MASA AKTIF 5 HARI", price: 3075, desc: "Penambahan masa aktif 5 hari" }
-            ],
             "FREE FIRE": [
-                { sku: "FF5", name: "TOP UP 5 DIAMOND", price: 1090, desc: "Instant Free Fire 5 Diamonds" },
-                { sku: "FF10", name: "TOP UP 10 DIAMOND", price: 1900, desc: "Instant Free Fire 10 Diamonds" }
+                { sku: "FF5", name: "TOP UP 5 DIAMOND", price: 1090 },
+                { sku: "FF10", name: "TOP UP 10 DIAMOND", price: 1900 },
+                { sku: "FF12", name: "TOP UP 12 DIAMOND", price: 2225 },
+                { sku: "FF20", name: "TOP UP 20 DIAMOND", price: 3907 }
+            ],
+            "MOBILE LEGEND": [
+                { sku: "ML10", name: "MOBILELEGEND - 10 Diamond", price: 2795 },
+                { sku: "ML100", name: "MOBILELEGEND - 100 Diamond", price: 20020 }
+            ],
+            "PLN Pascabayar": [
+                { sku: "PLN_PASCA", name: "Tagihan Listrik Pascabayar", price: 0 }
             ]
         };
 
@@ -706,7 +726,7 @@
             htmlContent += `<div class="service-grid">`;
             appDatabase.prepaid.forEach(item => {
                 htmlContent += `
-                    <div class="service-box" onclick="handleCategoryClick('${item.title}', '${item.placeholder}')">
+                    <div class="service-box" onclick="handleCategoryClick('${item.title}', '${item.placeholder}', false)">
                         <i class="fa-solid ${item.icon}"></i>
                         <span>${item.title}</span>
                     </div>
@@ -718,7 +738,7 @@
             htmlContent += `<div class="service-grid">`;
             appDatabase.postpaid.forEach(item => {
                 htmlContent += `
-                    <div class="service-box" onclick="handleCategoryClick('${item.title}', '${item.placeholder}')">
+                    <div class="service-box" onclick="handleCategoryClick('${item.title}', '${item.placeholder}', true)">
                         <i class="fa-solid ${item.icon}"></i>
                         <span>${item.title}</span>
                     </div>
@@ -729,12 +749,12 @@
             container.innerHTML = htmlContent;
         }
 
-        function handleCategoryClick(categoryName, placeholderText) {
+        function handleCategoryClick(categoryName, placeholderText, isPostpaidCategory) {
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
 
             const brands = brandDatabase[categoryName] || [
-                { name: categoryName.toUpperCase(), icon: "fa-layer-group" }
+                { name: categoryName, icon: isPostpaidCategory ? "fa-file-invoice" : "fa-layer-group" }
             ];
 
             let htmlContent = `
@@ -751,7 +771,7 @@
 
             brands.forEach(b => {
                 htmlContent += `
-                    <div class="brand-card" onclick="handleBrandClick('${b.name}', '${placeholderText}')">
+                    <div class="brand-card" onclick="handleBrandClick('${b.name}', '${placeholderText}', ${isPostpaidCategory})">
                         <div class="brand-card-info">
                             <i class="fa-solid ${b.icon}"></i>
                             <span>${b.name}</span>
@@ -765,41 +785,40 @@
             container.innerHTML = htmlContent;
         }
 
-        function handleBrandClick(brandName, placeholderText) {
+        function handleBrandClick(brandName, placeholderText, isPostpaidCategory) {
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
 
             const products = productDatabase[brandName] || [
-                { sku: "DEMO_1", name: brandName + " Reguler 1", price: 10000, desc: "Produk reguler andalan" },
-                { sku: "DEMO_2", name: brandName + " Reguler 2", price: 20000, desc: "Produk reguler cepat" }
+                { sku: isPostpaidCategory ? "PASCA_" + brandName.replace(/\s+/g, '_') : "DEMO_1", name: brandName + (isPostpaidCategory ? " (Tagihan)" : " Reguler"), price: isPostpaidCategory ? 0 : 10000 }
             ];
 
             let htmlContent = `
                 <div class="sub-header">
-                    <i class="fa-solid fa-arrow-left" onclick="handleCategoryClick('Pulsa', 'Nomor HP (Contoh: 08123456789)')"></i>
+                    <i class="fa-solid fa-arrow-left" onclick="renderHome()"></i>
                     <span>${brandName}</span>
                 </div>
 
                 <div class="input-target-box">
-                    <label>Input Nomor Tujuan</label>
+                    <label>${isPostpaidCategory ? 'ID Pelanggan / Nomor Sambungan' : 'Nomor Tujuan / ID Pelanggan'}</label>
                     <div class="input-target-wrapper">
-                        <i class="fa-solid fa-mobile-screen"></i>
-                        <input type="text" id="targetInput" placeholder="${placeholderText}" value="085290900062" autocomplete="off">
+                        <i class="fa-solid fa-user-pen"></i>
+                        <input type="text" id="targetInput" placeholder="${placeholderText}" autocomplete="off">
                     </div>
                 </div>
 
-                <div class="category-title" style="margin: 12px 0 8px 4px;">Pilihan Produk ${brandName}</div>
+                <div class="category-title" style="margin: 12px 0 8px 4px;">${isPostpaidCategory ? 'Pilih Layanan Tagihan' : 'Pilih Nominal Produk'}</div>
                 <div class="product-list">
             `;
 
             products.forEach(p => {
                 htmlContent += `
-                    <div class="product-card" onclick="openCheckoutModal('${brandName}', '${p.sku}', '${p.name}', ${p.price}, '${p.desc || ''}')">
+                    <div class="product-card" onclick="handleProductClick('${p.sku}', '${p.name}', ${p.price}, ${isPostpaidCategory})">
                         <div class="product-info">
                             <h4>${p.name}</h4>
-                            <p class="price">Rp ${p.price.toLocaleString('id-ID')}</p>
+                            <p class="price">${p.price > 0 ? 'Rp. ' + p.price.toLocaleString('id-ID') : (isPostpaidCategory ? 'Sesuai Tagihan' : 'Hubungi Admin')}</p>
                         </div>
-                        <span class="product-action">Lihat Detail</span>
+                        <span class="product-action">${isPostpaidCategory ? 'Cek Tagihan' : 'Beli <i class="fa-solid fa-chevron-right"></i>'}</span>
                     </div>
                 `;
             });
@@ -829,30 +848,57 @@
         }
 
         let activeTransactionData = {};
+        let isPostpaidInquired = false;
 
-        function openCheckoutModal(brandName, sku, productName, price, desc) {
+        // Fungsi klik produk setelah nomor tujuan diisi
+        function handleProductClick(sku, productName, price, isPostpaidCategory) {
             const targetInputVal = document.getElementById('targetInput') ? document.getElementById('targetInput').value.trim() : '';
             
             if(!targetInputVal) {
-                alert("Mohon masukkan Nomor Tujuan terlebih dahulu!");
+                alert("Mohon masukkan Nomor Tujuan / ID Pelanggan terlebih dahulu di kolom atas!");
                 document.getElementById('targetInput').focus();
                 return;
             }
 
+            if (!isPostpaidCategory && price <= 0) {
+                alert("Harga produk tidak valid.");
+                return;
+            }
+
+            openCheckoutModal(sku, productName, price, isPostpaidCategory, targetInputVal);
+        }
+
+        function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
             activeTransactionData = {
                 sku: sku,
                 productName: productName,
                 price: price,
-                target: targetInputVal
+                target: targetVal,
+                isPostpaid: isPostpaid
             };
 
-            document.getElementById('modalTitle').innerText = productName;
-            document.getElementById('detailProvider').innerText = brandName;
-            document.getElementById('detailHarga').innerText = `Rp ${price.toLocaleString('id-ID')}`;
-            document.getElementById('detailTujuan').innerText = targetInputVal;
-            document.getElementById('detailDeskripsi').innerText = desc || "Tidak ada Deskripsi";
+            isPostpaidInquired = false;
+            document.getElementById('summaryProduct').innerText = `${productName} ${price > 0 ? '(Rp ' + price.toLocaleString('id-ID') + ')' : ''}`;
+            document.getElementById('summaryTarget').innerText = `Tujuan / ID: ${targetVal}`;
+            document.getElementById('whatsappInput').value = '';
+
+            if (isPostpaid) {
+                // Pascabayar: Wajib Inquiry dulu untuk menarik data & nominal tagihan asli
+                document.getElementById('postpaidDetails').style.display = 'block';
+                document.getElementById('pCustomerName').innerText = "Menunggu Inquiry...";
+                document.getElementById('pAmount').innerText = "Rp 0";
+                document.getElementById('qrisSection').style.display = 'none';
+                document.getElementById('modalSubmitBtn').innerText = "Cek Tagihan (Inquiry)";
+            } else {
+                // Prabayar: Langsung tampilkan QRIS dan tombol bayar instan
+                document.getElementById('postpaidDetails').style.display = 'none';
+                document.getElementById('qrisSection').style.display = 'block';
+                document.getElementById('modalSubmitBtn').innerText = "Bayar Sekarang";
+                generateDynamicQRIS(price);
+            }
 
             document.getElementById('actionModal').classList.add('active');
+            setTimeout(() => document.getElementById('whatsappInput').focus(), 150);
         }
 
         function closeModalDirect() {
@@ -865,37 +911,121 @@
             }
         }
 
-        async function executeTransaction() {
+        // Pengatur Alur Tombol (Inquiry dulu jika pascabayar, atau langsung eksekusi transaksi jika prabayar)
+        async function processAction() {
+            const whatsapp = document.getElementById('whatsappInput').value;
+            if (!whatsapp) {
+                alert("Mohon masukkan nomor WhatsApp terlebih dahulu.");
+                document.getElementById('whatsappInput').focus();
+                return;
+            }
+
+            if (activeTransactionData.isPostpaid && !isPostpaidInquired) {
+                await handlePostpaidInquiry();
+            } else {
+                await executeFinalTransaction(whatsapp);
+            }
+        }
+
+        // Tahap Inquiry Pascabayar ke Backend /api/digiflazz
+        async function handlePostpaidInquiry() {
+            const submitBtn = document.getElementById('modalSubmitBtn');
+            submitBtn.innerText = "Mengecek Tagihan...";
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/digiflazz', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: "pascabayar_inquiry",
+                        payload: {
+                            buyer_sku_code: activeTransactionData.sku,
+                            customer_no: activeTransactionData.target
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok && result.data) {
+                    const dataTagihan = result.data;
+                    document.getElementById('pCustomerName').innerText = dataTagihan.customer_name || "Valid";
+                    const totalTagihan = dataTagihan.selling_price || dataTagihan.price || 0;
+                    document.getElementById('pAmount').innerText = "Rp " + totalTagihan.toLocaleString('id-ID');
+                    
+                    activeTransactionData.price = totalTagihan;
+
+                    // Tampilkan QRIS Dinamis berdasarkan total tagihan asli hasil inquiry
+                    generateDynamicQRIS(totalTagihan);
+                    document.getElementById('qrisSection').style.display = 'block';
+
+                    isPostpaidInquired = true;
+                    submitBtn.innerText = "Konfirmasi Bayar Tagihan";
+                } else {
+                    alert("Gagal cek tagihan: " + (result.message || "Data tidak ditemukan"));
+                }
+            } catch (err) {
+                alert("Kesalahan koneksi saat melakukan inquiry tagihan.");
+            } finally {
+                submitBtn.disabled = false;
+                if(!isPostpaidInquired) submitBtn.innerText = "Cek Tagihan (Inquiry)";
+            }
+        }
+
+        // Generator QRIS Dinamis Lokal
+        function generateDynamicQRIS(nominal) {
+            const container = document.getElementById('qrcodeTarget');
+            container.innerHTML = "";
+            
+            const qrisPayloadString = `TOOPAY-DIGI-QRIS-${activeTransactionData.target}-${nominal}`; 
+
+            new QRCode(container, {
+                text: qrisPayloadString,
+                width: 150,
+                height: 150,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        // Eksekusi Final Transaksi (Prabayar langsung / Pembayaran Pascabayar setelah inquiry)
+        async function executeFinalTransaction(whatsapp) {
             const refId = "TPG-" + Date.now();
-            const submitBtn = document.querySelector('.modal-sheet .btn-submit');
+            const submitBtn = document.getElementById('modalSubmitBtn');
             const originalText = submitBtn.innerText;
             submitBtn.innerText = "Memproses Transaksi...";
             submitBtn.disabled = true;
 
+            const actionType = activeTransactionData.isPostpaid ? "pascabayar_pay" : "transaction";
+
             try {
-                const response = await fetch('/api/transaksi', {
+                const response = await fetch('/api/digiflazz', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        buyer_sku_code: activeTransactionData.sku,
-                        customer_no: activeTransactionData.target,
-                        ref_id: refId
+                        action: actionType,
+                        payload: {
+                            buyer_sku_code: activeTransactionData.sku,
+                            customer_no: activeTransactionData.target,
+                            ref_id: refId,
+                            whatsapp: whatsapp,
+                            amount: activeTransactionData.price
+                        }
                     })
                 });
 
                 const result = await response.json();
                 
                 if (response.ok) {
-                    alert(`Transaksi Berhasil Dikirim!\n\nProduk: ${activeTransactionData.productName}\nTujuan: ${activeTransactionData.target}\nRef ID: ${refId}\nRespon: ${JSON.stringify(result.data || result)}`);
+                    alert(`Transaksi Berhasil Dikirim!\n\nProduk: ${activeTransactionData.productName}\nTujuan: ${activeTransactionData.target}\nRef ID: ${refId}`);
                     closeModalDirect();
                     renderHome();
                 } else {
-                    alert(`Gagal: ${result.error || 'Terjadi kesalahan pada sistem.'}`);
+                    alert(`Gagal: ${result.message || result.error || 'Terjadi kesalahan sistem.'}`);
                 }
             } catch (error) {
-                alert("Koneksi bermasalah. Gagal terhubung ke server backend.");
+                alert("Koneksi bermasalah ke server backend.");
             } finally {
                 submitBtn.innerText = originalText;
                 submitBtn.disabled = false;
@@ -903,6 +1033,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', renderHome);
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
     </script>
 </body>
-    </html>
+</html>
