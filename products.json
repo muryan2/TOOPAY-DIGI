@@ -1,17 +1,16 @@
 const crypto = require('crypto');
 const fs = require('fs');
 
-// Konfigurasi Akun Digiflazz
-const username = 'USERNAME_DIGIFLAZZ_SAMPEYAN';
-const apiKey = 'API_KEY_PRODUCTION_ATAU_DEV_SAMPEYAN'; // Gunakan production key
+const USERNAME = 'USERNAME_DIGIFLAZZ_ANDA';
+const API_KEY = 'API_KEY_ANDA'; // Pastikan sesuai mode (Development / Production)
 
-// Buat sign MD5 sesuai standar Digiflazz (username + key + "depo")
+// Formula signature resmi Digiflazz untuk price-list: md5(username + apiKey + "pricelist")
 const sign = crypto
   .createHash('md5')
-  .update(username + apiKey + 'depo')
+  .update(USERNAME + API_KEY + 'pricelist')
   .digest('hex');
 
-async function getPricelist() {
+async function fetchDigiflazzPricelist() {
   try {
     const response = await fetch('https://api.digiflazz.com/v1/price-list', {
       method: 'POST',
@@ -19,27 +18,24 @@ async function getPricelist() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        cmd: 'prepaid', // atau 'pasca' sesuai kebutuhan
-        username: username,
+        cmd: 'prepaid',
+        username: USERNAME,
         sign: sign,
       }),
     });
 
-    const data = await response.json();
+    const result = await response.json();
 
-    if (data.success || data.data) {
-      // Filter atau format data produk sesuai kebutuhan frontend webapp
-      const products = data.data;
-
-      // Simpan ke file products.json di folder project
-      fs.writeFileSync('products.json', JSON.stringify(products, null, 2));
-      console.log('Sukses! Data produk berhasil diperbarui ke products.json');
+    // Sesuai dokumentasi, data produk berada di dalam properti .data
+    if (result.data) {
+      fs.writeFileSync('products.json', JSON.stringify(result, null, 2));
+      console.log('Sukses: Daftar harga Digiflazz berhasil disimpan ke products.json');
     } else {
-      console.log('Gagal ambil data:', data.message || data);
+      console.log('Gagal mengambil data:', result);
     }
   } catch (error) {
     console.error('Terjadi kesalahan koneksi:', error);
   }
 }
 
-getPricelist();
+fetchDigiflazzPricelist();
