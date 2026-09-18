@@ -1,53 +1,41 @@
 export async function onRequestPost(context) {
     try {
-        const { request, env } = context;
-        const inputData = await request.json();
+        const body = await context.request.json();
+        const { action, payload } = body;
 
-        const username = env.DIGIFLAZZ_USERNAME;
-        const apiKey = env.DIGIFLAZZ_API_KEY; 
-        
-        const buyerSkuCode = inputData.buyer_sku_code;
-        const customerNo = inputData.customer_no;
-        const refId = inputData.ref_id;
+        // URL Webhook dari MacroDroid di HP Android Anda (misalnya menggunakan ngrok atau IP lokal)
+        const MACRODROID_WEBHOOK_URL = "https://your-macrodroid-webhook-url.com/endpoint";
 
-        if (!username || !apiKey) {
-            return Response.json({ status: "error", error: "Konfigurasi Username atau API Key Digiflazz belum terbaca di environment." }, { status: 500 });
-        }
-
-        // Membuat MD5 Signature menggunakan Web Crypto API (aman untuk Cloudflare Worker)
-        const signData = username + apiKey + refId;
-        const encoder = new TextEncoder();
-        const dataBuffer = encoder.encode(signData);
-        const hashBuffer = await crypto.subtle.digest('MD5', dataBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-        const digiflazzResponse = await fetch('https://api.digiflazz.com/v1/transaction', {
+        // Meneruskan data aksi (baik itu ambil produk, inquiry, atau transaksi) ke MacroDroid HP
+        const macroResponse = await fetch(MACRODROID_WEBHOOK_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                username: username,
-                buyer_sku_code: buyerSkuCode,
-                customer_no: customerNo,
-                ref_id: refId,
-                sign: signature,
-                testing: false
+                action: action, // contoh: "get_pricelist", "transaction", "pascabayar_inquiry", "pascabayar_pay"
+                payload: payload
             })
         });
 
-        const result = await digiflazzResponse.json();
+        const macroResult = await macroResponse.json();
 
-        return Response.json({
+        return new Response(JSON.stringify({
             status: "success",
-            data: result
-        }, { status: 200 });
+            message: "Permintaan berhasil diproses via MacroDroid",
+            data: macroResult
+        }), {
+            headers: { 'Content-Type': 'application/json' },
+            status: 200
+        });
 
-    } catch (err) {
-        return Response.json({
+    } catch (error) {
+        return new Response(JSON.stringify({
             status: "error",
-            error: err.message || "Gagal menyambungkan ke server backend."
-        }, { status: 500 });
+            message: error.message
+        }), {
+            headers: { 'Content-Type': 'application/json' },
+            status: 500
+        });
     }
 }
