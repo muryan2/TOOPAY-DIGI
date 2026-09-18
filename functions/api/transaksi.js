@@ -3,17 +3,16 @@ export async function onRequestPost(context) {
         const body = await context.request.json();
         const { action, payload } = body;
 
-        // URL Webhook dari MacroDroid di HP Android Anda (misalnya menggunakan ngrok atau IP lokal)
-        const MACRODROID_WEBHOOK_URL = "https://your-macrodroid-webhook-url.com/endpoint";
+        // Menggunakan Environment Variable di Vercel untuk URL webhook MacroDroid
+        const MACRODROID_WEBHOOK_URL = process.env.MACRODROID_WEBHOOK_URL || "https://your-macrodroid-webhook-url.com/endpoint";
 
-        // Meneruskan data aksi (baik itu ambil produk, inquiry, atau transaksi) ke MacroDroid HP
         const macroResponse = await fetch(MACRODROID_WEBHOOK_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                action: action, // contoh: "get_pricelist", "transaction", "pascabayar_inquiry", "pascabayar_pay"
+                action: action,
                 payload: payload
             })
         });
