@@ -1,7 +1,7 @@
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open('toopay-store').then((cache) => {
-      return cache.addAll(['/TOOPAY-DIGI/', '/TOOPAY-DIGI/index.html']);
+      return cache.addAll(['/', '/index.html']);
     })
   );
 });
