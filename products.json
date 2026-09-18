@@ -1,0 +1,45 @@
+const crypto = require('crypto');
+const fs = require('fs');
+
+// Konfigurasi Akun Digiflazz
+const username = 'USERNAME_DIGIFLAZZ_SAMPEYAN';
+const apiKey = 'API_KEY_PRODUCTION_ATAU_DEV_SAMPEYAN'; // Gunakan production key
+
+// Buat sign MD5 sesuai standar Digiflazz (username + key + "depo")
+const sign = crypto
+  .createHash('md5')
+  .update(username + apiKey + 'depo')
+  .digest('hex');
+
+async function getPricelist() {
+  try {
+    const response = await fetch('https://api.digiflazz.com/v1/price-list', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        cmd: 'prepaid', // atau 'pasca' sesuai kebutuhan
+        username: username,
+        sign: sign,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success || data.data) {
+      // Filter atau format data produk sesuai kebutuhan frontend webapp
+      const products = data.data;
+
+      // Simpan ke file products.json di folder project
+      fs.writeFileSync('products.json', JSON.stringify(products, null, 2));
+      console.log('Sukses! Data produk berhasil diperbarui ke products.json');
+    } else {
+      console.log('Gagal ambil data:', data.message || data);
+    }
+  } catch (error) {
+    console.error('Terjadi kesalahan koneksi:', error);
+  }
+}
+
+getPricelist();
