@@ -764,7 +764,7 @@
             container.innerHTML = htmlContent;
         }
 
-        function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName) {
+                function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName) {
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
 
@@ -803,59 +803,8 @@
             container.innerHTML = htmlContent;
             renderProductList(matchedProducts, isPostpaidCategory);
         }
-                }
-                return true;
-            }); 
-                (p.brand && p.brand.toUpperCase().includes(brandName.toUpperCase())) ||
-                (p.product_name && p.product_name.toUpperCase().includes(brandName.toUpperCase()))
-            );
 
-            // Fallback jika products.json kosong/belum tersinkronisasi
-            if (matchedProducts.length === 0) {
-                matchedProducts = [
-                    { buyer_sku_code: isPostpaidCategory ? "PASCA_" + brandName.replace(/\s+/g, '_') : "DEMO_1", product_name: brandName + (isPostpaidCategory ? " (Tagihan)" : " Reguler (Sinkronkan Action)"), price: isPostpaidCategory ? 0 : 10000 }
-                ];
-            }
-
-            let htmlContent = `
-                <div class="sub-header">
-                    <i class="fa-solid fa-arrow-left" onclick="renderHome()"></i>
-                    <span>${brandName}</span>
-                </div>
-
-                <div class="input-target-box">
-                    <label>${isPostpaidCategory ? 'ID Pelanggan / Nomor Sambungan' : 'Nomor Tujuan / ID Pelanggan'}</label>
-                    <div class="input-target-wrapper">
-                        <i class="fa-solid fa-user-pen"></i>
-                        <input type="text" id="targetInput" placeholder="${placeholderText}" autocomplete="off">
-                    </div>
-                </div>
-
-                <div class="category-title" style="margin: 12px 0 8px 4px;">${isPostpaidCategory ? 'Pilih Layanan Tagihan' : 'Pilih Nominal Produk'}</div>
-                <div class="product-list">
-            `;
-
-            matchedProducts.forEach(p => {
-                const sku = p.buyer_sku_code || p.sku;
-                const name = p.product_name || p.name;
-                const price = p.price || 0;
-
-                htmlContent += `
-                    <div class="product-card" onclick="handleProductClick('${sku}', '${name}', ${price}, ${isPostpaidCategory})">
-                        <div class="product-info">
-                            <h4>${name}</h4>
-                            <p class="price">${price > 0 ? 'Rp. ' + price.toLocaleString('id-ID') : (isPostpaidCategory ? 'Sesuai Tagihan' : 'Hubungi Admin')}</p>
-                        </div>
-                        <span class="product-action">${isPostpaidCategory ? 'Cek Tagihan' : 'Beli <i class="fa-solid fa-chevron-right"></i>'}</span>
-                    </div>
-                `;
-            });
-
-            htmlContent += `</div>`;
-            container.innerHTML = htmlContent;
-        }
-
-        function filterBrands() {
+function filterBrands() {
             let input = document.getElementById('brandSearch').value.toLowerCase();
             let cards = document.querySelectorAll('.brand-card');
             cards.forEach(card => {
