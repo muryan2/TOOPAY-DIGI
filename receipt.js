@@ -1,17 +1,23 @@
 let dataLayananTooPay = [];
-const NOMOR_WA_ADMIN = "628123456789"; // Silakan ganti dengan nomor WA Toko Anda
+const NOMOR_WA_ADMIN = "628123456789"; // Silakan ganti dengan nomor WA Toko Anda sendiri
 
 function muatDataProduk() {
     fetch('products.json')
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('File products.json tidak merespon');
+            return res.json();
+        })
         .then(data => {
             dataLayananTooPay = data;
-            console.log("Database TooPay Digi berhasil dimuat!");
+            console.log("Database produk TooPay Digi berhasil dimuat!");
         })
-        .catch(err => console.error('Gagal memuat produk:', err));
+        .catch(err => {
+            console.error('Error memuat data:', err);
+        });
 }
 
 function saringLayananPrabayar(kategoriDipilih) {
+    // products.json Anda menggunakan penulisan huruf besar di awal seperti: "Pulsa", "Data", "Games"
     const hasilFilter = dataLayananTooPay.filter(p => {
         const kat = p.category || "";
         return kat.toLowerCase() === kategoriDipilih.toLowerCase();
@@ -20,14 +26,17 @@ function saringLayananPrabayar(kategoriDipilih) {
 }
 
 function renderDaftarProdukTooPay(daftarProduk) {
-    const container = document.querySelector(".product-list") || document.getElementById("produk-container") || document.querySelector(".brand-list");
+    // Mencari kontainer produk bawaan template asli Anda (.product-list atau kontainer penampung di bawah menu prabayar)
+    let container = document.querySelector(".product-list") || document.getElementById("produk-container") || document.querySelector(".brand-list");
     if (!container) return;
 
     container.innerHTML = "";
     container.style.display = "flex";
+    container.style.flexDirection = "column";
+    container.style.gap = "10px";
 
     if (daftarProduk.length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:#78909c; font-size:0.8rem; padding:20px; width:100%;'>Produk tidak ditemukan.</p>";
+        container.innerHTML = "<p style='text-align:center; color:#78909c; font-size:0.8rem; padding:20px; width:100%;'>Produk tidak ditemukan atau sedang dinonaktifkan.</p>";
         return;
     }
 
@@ -51,6 +60,7 @@ function renderDaftarProdukTooPay(daftarProduk) {
         `;
         container.appendChild(kartuProduk);
     });
+    
     container.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -62,7 +72,9 @@ function pilihProdukKeKonfirmasi(namaProduk, hargaProduk) {
     if (targetHarga) targetHarga.innerText = "Rp " + hargaProduk.toLocaleString('id-ID');
 
     const sectionKonfirmasi = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
-    if (sectionKonfirmasi) sectionKonfirmasi.scrollIntoView({ behavior: 'smooth' });
+    if (sectionKonfirmasi) {
+        sectionKonfirmasi.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 function prosesNotaWhatsApp() {
@@ -75,7 +87,7 @@ function prosesNotaWhatsApp() {
     const waUser = document.getElementById("input-wa") ? document.getElementById("input-wa").value : "";
 
     if (produk === "-" || !pelanggan || !waUser) {
-        alert("⚠️ Mohon pilih paket produk dan isi nomor tujuan transaksi Anda!");
+        alert("⚠️ Mohon pilih paket produk dan isi nomor tujuan transaksi Anda dengan lengkap!");
         return;
     }
 
@@ -91,17 +103,24 @@ function prosesNotaWhatsApp() {
     window.open(`https://whatsapp.com{NOMOR_WA_ADMIN}&text=${teksWhatsApp}`, '_blank');
 }
 
+// Menghubungkan tombol menu grid prabayar bawaan HTML asli Anda ke sistem penyaringan JavaScript
 document.addEventListener("DOMContentLoaded", function() {
     const btnLanjutHTML = document.querySelector(".btn-lanjut") || document.querySelector("button[onclick*='Pembayaran']");
-    if (btnLanjutHTML) btnLanjutHTML.setAttribute("onclick", "prosesNotaWhatsApp()");
+    if (btnLanjutHTML) {
+        btnLanjutHTML.setAttribute("onclick", "prosesNotaWhatsApp()");
+    }
 
     const kotakMenu = document.querySelectorAll(".service-box");
     kotakMenu.forEach(box => {
-        box.addEventListener("click", function(event) { event.preventDefault(); });
+        // Matikan fungsi link href asli bawaan HTML agar tidak memicu refresh halaman otomatis saat diklik
+        box.addEventListener("click", function(event) {
+            event.preventDefault();
+        });
+
         const textMenu = box.innerText.trim().toLowerCase();
         
         if (textMenu.includes("pulsa")) box.setAttribute("onclick", "saringLayananPrabayar('Pulsa')");
-        else if (textMenu.includes("data")) box.setAttribute("onclick", "saringLayananPrabayar('Data')");
+        else if (textMenu.includes("paket data") || textMenu.includes("data")) box.setAttribute("onclick", "saringLayananPrabayar('Data')");
         else if (textMenu.includes("game")) box.setAttribute("onclick", "saringLayananPrabayar('Games')");
         else if (textMenu.includes("voucher")) box.setAttribute("onclick", "saringLayananPrabayar('Aktivasi Voucher')");
         else if (textMenu.includes("e-money") || textMenu.includes("money")) box.setAttribute("onclick", "saringLayananPrabayar('E-Money')");
