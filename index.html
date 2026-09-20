@@ -750,7 +750,7 @@
 
             brands.forEach(b => {
                 htmlContent += `
-                    <div class="brand-card" onclick="handleBrandClick('${b.name}', '${placeholderText}', ${isPostpaidCategory})">
+                    <div class="brand-card" onclick="handleBrandClick('${b.name}', '${placeholderText}', ${isPostpaidCategory}, '${categoryName}')">
                         <div class="brand-card-info">
                             <i class="fa-solid ${b.icon}"></i>
                             <span>${b.name}</span>
@@ -764,12 +764,26 @@
             container.innerHTML = htmlContent;
         }
 
-        function handleBrandClick(brandName, placeholderText, isPostpaidCategory) {
+        function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName) {
+            // Filter ketat agar kategori Pulsa tidak tercampur voucher/aktivasi
+            let globalProductsJson_local = typeof globalProductsJson !== "undefined" ? globalProductsJson : [];
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
 
             // Ambil produk dari file products.json berdasarkan brand atau kategori yang cocok
-            let matchedProducts = globalProductsJson.filter(p => 
+            let matchedProducts = globalProductsJson.filter(p => {
+                const matchBrand = (p.brand && p.brand.toUpperCase().includes(brandName.toUpperCase())) ||
+                                   (p.product_name && p.product_name.toUpperCase().includes(brandName.toUpperCase()));
+                if (!matchBrand) return false;
+                if (categoryName === "Pulsa") {
+                    const nameUp = p.product_name.toUpperCase();
+                    if (nameUp.includes("VOUCHER") || nameUp.includes("AKTIVASI") || nameUp.includes("PERDANA")) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+            // dummy disabled:  
                 (p.brand && p.brand.toUpperCase().includes(brandName.toUpperCase())) ||
                 (p.product_name && p.product_name.toUpperCase().includes(brandName.toUpperCase()))
             );
