@@ -862,23 +862,13 @@ function filterBrands() {
         let isPostpaidInquired = false;
 
         
-        function handleProductClick(sku, productName, price, isPostpaidCategory) {
+                function handleProductClick(sku, productName, price, isPostpaidCategory) {
             const targetInput = document.getElementById("targetInput");
             const targetVal = targetInput ? targetInput.value.trim() : "";
-            
+
             if (!targetVal || targetVal.length < 4) {
                 alert("Silakan masukkan Nomor Tujuan / ID Pelanggan terlebih dahulu (minimal 4 digit).");
                 if (targetInput) targetInput.focus();
-                return;
-            }
-
-            openCheckoutModal(sku, productName, price, isPostpaidCategory, targetVal);
-        }
-            const targetInputVal = document.getElementById('targetInput') ? document.getElementById('targetInput').value.trim() : '';
-            
-            if(!targetInputVal) {
-                alert("Mohon masukkan Nomor Tujuan / ID Pelanggan terlebih dahulu di kolom atas!");
-                document.getElementById('targetInput').focus();
                 return;
             }
 
@@ -887,10 +877,10 @@ function filterBrands() {
                 return;
             }
 
-            openCheckoutModal(sku, productName, price, isPostpaidCategory, targetInputVal);
+            openCheckoutModal(sku, productName, price, isPostpaidCategory, targetVal);
         }
 
-        function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
+function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
             activeTransactionData = {
                 sku: sku,
                 productName: productName,
