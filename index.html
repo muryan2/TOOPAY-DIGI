@@ -797,61 +797,38 @@
 
 
         function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName) {
-            if (!brandName) brandName = "";
-            document.getElementById('homeHeaderContainer').style.display = 'none';
-            const container = document.getElementById('appRoot');
+    brandName = brandName || "";
+    categoryName = categoryName || "";
+    
+    const headerContainer = document.getElementById("homeHeaderContainer");
+    if (headerContainer) headerContainer.style.display = "none";
 
-            let matchedProducts = globalProductsJson.filter(p => {
-                const bName = brandName ? brandName.toUpperCase() : "";
-                const matchBrand = (p.brand && p.brand.toUpperCase().includes(bName)) ||
-                                   (p.product_name && (p.product_name || p.name || "").toUpperCase().includes(bName));
-                if (!matchBrand) return false;
-                if (categoryName === "Pulsa") {
-                    const nameUp = (p.product_name || p.name || "").toUpperCase();
-                    if (nameUp.includes("VOUCHER") || nameUp.includes("AKTIVASI") || nameUp.includes("PERDANA")) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-            document.getElementById('homeHeaderContainer').style.display = 'none';
-            const container = document.getElementById('appRoot');
+    if (!window.globalProductsJson) {
+        console.error("globalProductsJson belum dimuat");
+        return;
+    }
 
-            let matchedProducts = globalProductsJson.filter(p => {
-                const matchBrand = (p.brand && p.brand.toUpperCase().includes(brandName.toUpperCase())) ||
-                                   (p.product_name && (p.product_name || p.name || "").toUpperCase().includes(brandName.toUpperCase()));
-                if (!matchBrand) return false;
-                if (categoryName === "Pulsa") {
-                    const nameUp = (p.product_name || p.name || "").toUpperCase();
-                    if (nameUp.includes("VOUCHER") || nameUp.includes("AKTIVASI") || nameUp.includes("PERDANA")) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-
-            if (matchedProducts.length === 0) {
-                matchedProducts = [
-                    { buyer_sku_code: isPostpaidCategory ? "PASCA_" + brandName.replace(/\s+/g, "_") : "DEMO_1", product_name: brandName + (isPostpaidCategory ? " (Tagihan)" : " Reguler"), price: isPostpaidCategory ? 0 : 10000 }
-                ];
+    let matchedProducts = globalProductsJson.filter(p => {
+        if (!p) return false;
+        const bName = brandName.toUpperCase();
+        const pBrand = (p.brand || "").toUpperCase();
+        const pName = (p.product_name || p.name || "").toUpperCase();
+        
+        const matchBrand = (pBrand && pBrand.includes(bName)) || (pName && pName.includes(bName));
+        if (!matchBrand) return false;
+        
+        if (categoryName === "Pulsa") {
+            if (pName.includes("VOUCHER") || pName.includes("AKTIVASI") || pName.includes("PERDANA")) {
+                return false;
             }
-
-            let htmlContent = `
-                <div class="sub-header">
-                    <i class="fa-solid fa-arrow-left" onclick="renderHome()"></i>
-                    <span>${brandName}</span>
-                </div>
-
-                <div class="input-target-box">
-                    <label>${isPostpaidCategory ? "ID Pelanggan / Nomor Sambungan" : "Nomor Tujuan / ID Pelanggan"}</label>
-                    <input type="text" id="targetInput" placeholder="${placeholderText}" oninput="validateAndRenderProducts()">
-                </div>
-
-                <div id="productGridContainer"></div>
-            `;
-            container.innerHTML = htmlContent;
-            renderProductList(matchedProducts, isPostpaidCategory);
         }
+        return true;
+    });
+
+    if (typeof renderProductList === "function") {
+        renderProductList(matchedProducts);
+    }
+}
 
 function filterBrands() {
             let input = document.getElementById('brandSearch').value.toLowerCase();
