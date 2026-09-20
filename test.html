@@ -1,0 +1,10 @@
+<(!DOCTYPE html><html><body><h3>Diagnostic Test</h3><div id="log">Loading...</div><script>
+fetch("products.json")
+  .then(res => res.json())
+  .then(data => {
+      document.getElementById("log").innerHTML = "SUCCESS! Produk dimuat: " + Object.keys(data).length + " data.";
+  })
+  .catch(err => {
+      document.getElementById("log").innerHTML = "GAGAL: " + err;
+  });
+</script></body></html>
