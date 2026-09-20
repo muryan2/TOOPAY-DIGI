@@ -1,0 +1,5 @@
+- name: Run Sync Script
+        env:
+          DIGIFLAZZ_USERNAME: ${{ secrets.DIGIFLAZZ_USERNAME }}
+          DIGIFLAZZ_KEY: ${{ secrets.DIGIFLAZZ_API_KEY_PRODUCTION }}
+        run: node sync-products.js
