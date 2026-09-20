@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config();                           
 const crypto = require('crypto');
 const fs = require('fs');
 const axios = require('axios');
@@ -8,13 +8,13 @@ const API_KEY = process.env.DIGIFLAZZ_KEY;
 
 async function fetchDigiflazzPricelist() {
     try {
+        // Disamakan menggunakan kata kunci 'depo' agar sinkron dengan index.js Anda
         const sign = crypto
             .createHash('md5')
-            .update(USERNAME + API_KEY + 'pricelist')
+            .update(USERNAME + API_KEY + 'depo')
             .digest('hex');
 
-        // Sesuaikan cmd menjadi 'pricelist'
-        const payload = {
+        const payload = {                                         
             cmd: 'pricelist',
             username: USERNAME,
             sign: sign
@@ -22,7 +22,7 @@ async function fetchDigiflazzPricelist() {
 
         console.log("Mengambil data produk dari Digiflazz...");
         const response = await axios.post('https://api.digiflazz.com/v1/price-list', payload);
-        
+
         const result = response.data;
 
         if (result && result.data) {
