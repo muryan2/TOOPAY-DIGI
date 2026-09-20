@@ -779,6 +779,32 @@
                     }
                 }
                 return true;
+            });
+
+            if (matchedProducts.length === 0) {
+                matchedProducts = [
+                    { buyer_sku_code: isPostpaidCategory ? "PASCA_" + brandName.replace(/\s+/g, "_") : "DEMO_1", product_name: brandName + (isPostpaidCategory ? " (Tagihan)" : " Reguler"), price: isPostpaidCategory ? 0 : 10000 }
+                ];
+            }
+
+            let htmlContent = `
+                <div class="sub-header">
+                    <i class="fa-solid fa-arrow-left" onclick="renderHome()"></i>
+                    <span>${brandName}</span>
+                </div>
+
+                <div class="input-target-box">
+                    <label>${isPostpaidCategory ? "ID Pelanggan / Nomor Sambungan" : "Nomor Tujuan / ID Pelanggan"}</label>
+                    <input type="text" id="targetInput" placeholder="${placeholderText}" oninput="validateAndRenderProducts()">
+                </div>
+
+                <div id="productGridContainer"></div>
+            `;
+            container.innerHTML = htmlContent;
+            renderProductList(matchedProducts, isPostpaidCategory);
+        }
+                }
+                return true;
             }); 
                 (p.brand && p.brand.toUpperCase().includes(brandName.toUpperCase())) ||
                 (p.product_name && p.product_name.toUpperCase().includes(brandName.toUpperCase()))
