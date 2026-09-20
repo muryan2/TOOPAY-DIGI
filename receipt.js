@@ -17,7 +17,6 @@ function muatDataProduk() {
 }
 
 function saringLayananPrabayar(kategoriDipilih) {
-    // products.json Anda menggunakan penulisan huruf besar di awal seperti: "Pulsa", "Data", "Games"
     const hasilFilter = dataLayananTooPay.filter(p => {
         const kat = p.category || "";
         return kat.toLowerCase() === kategoriDipilih.toLowerCase();
@@ -26,41 +25,72 @@ function saringLayananPrabayar(kategoriDipilih) {
 }
 
 function renderDaftarProdukTooPay(daftarProduk) {
-    // Mencari kontainer produk bawaan template asli Anda (.product-list atau kontainer penampung di bawah menu prabayar)
-    let container = document.querySelector(".product-list") || document.getElementById("produk-container") || document.querySelector(".brand-list");
-    if (!container) return;
+    // JURUS PINTAR: Cari kontainer bawaan template, jika tidak ada, cari pembungkus Layanan Prabayar
+    let container = document.querySelector(".product-list") || document.getElementById("produk-container");
+    
+    if (!container) {
+        // Jika kontainer tidak ditemukan, kita buat otomatis di bawah menu Prabayar agar tidak merusak tampilan atas
+        container = document.getElementById("auto-product-container");
+        if (!container) {
+            container = document.createElement("div");
+            container.id = "auto-product-container";
+            // Berikan style agar desain card produk Anda tetap rapi dan tidak berantakan
+            container.style.display = "flex";
+            container.style.flexDirection = "column";
+            container.style.gap = "10px";
+            container.style.margin = "20px 0";
+            container.style.padding = "0 4px";
+            
+            // Pasang kontainer baru ini tepat sebelum kotak Konfirmasi Pesanan
+            const konfirmasiBox = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
+            if (konfirmasiBox) {
+                konfirmasiBox.parentNode.insertBefore(container, konfirmasiBox);
+            } else {
+                document.body.appendChild(container);
+            }
+        }
+    }
 
     container.innerHTML = "";
-    container.style.display = "flex";
-    container.style.flexDirection = "column";
-    container.style.gap = "10px";
 
     if (daftarProduk.length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:#78909c; font-size:0.8rem; padding:20px; width:100%;'>Produk tidak ditemukan atau sedang dinonaktifkan.</p>";
+        container.innerHTML = "<p style='text-align:center; color:#78909c; font-size:0.85rem; padding:20px; width:100%; background:#ffffff; border-radius:12px; border:1px solid #c8e6c9;'>Produk kategori ini belum tersedia atau sedang dinonaktifkan.</p>";
         return;
     }
+
+    // Buat Judul Penanda Paket yang sedang dibuka
+    const judulPaket = document.createElement("div");
+    judulPaket.style = "font-size: 0.85rem; font-weight: 800; color: #1b5e20; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;";
+    judulPaket.innerHTML = `<i class="fa-solid fa-basket-shopping"></i> Kumpulan Paket Pilihan:`;
+    container.appendChild(judulPaket);
 
     daftarProduk.forEach(produk => {
         const nama = produk.product_name || "Produk Tanpa Nama";
         const harga = produk.price || 0;
 
         const kartuProduk = document.createElement("div");
+        
+        // Mempertahankan class bawaan template asli Anda (.product-card)
         kartuProduk.className = "product-card";
+        
+        // JURUS CADANGAN: Jika class .product-card bawaan template Anda hilang, berikan style dasar agar tetap cantik
+        kartuProduk.style = "background: #ffffff; border: 1px solid #c8e6c9; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02);";
         kartuProduk.onclick = () => pilihProdukKeKonfirmasi(nama, harga);
 
         kartuProduk.innerHTML = `
-            <div class="brand-card-info">
-                <i class="fa-solid fa-mobile-screen-button"></i>
+            <div style="display: flex; align-items: center; gap: 12px; font-weight: 700; color: #263238; font-size: 0.9rem;">
+                <i class="fa-solid fa-mobile-screen-button" style="font-size: 1.4rem; color: #2e7d32;"></i>
                 <div style="display: flex; flex-direction: column; gap: 2px; text-align:left;">
-                    <span style="font-size: 0.85rem; font-weight:700;">${nama}</span>
-                    <span style="font-size: 0.72rem; color: #78909c;">Proses Otomatis 24 Jam</span>
+                    <span style="font-size: 0.85rem; font-weight:700; color:#263238;">${nama}</span>
+                    <span style="font-size: 0.72rem; color: #78909c; font-weight:normal;">Proses Otomatis 24 Jam</span>
                 </div>
             </div>
-            <span style="color: var(--brand-accent); font-weight: 800; font-size: 0.9rem; white-space:nowrap; margin-left:10px;">Rp ${harga.toLocaleString('id-ID')}</span>
+            <span style="color: #2e7d32; font-weight: 800; font-size: 0.95rem; white-space:nowrap; margin-left:10px;">Rp ${harga.toLocaleString('id-ID')}</span>
         `;
         container.appendChild(kartuProduk);
     });
     
+    // Layar HP otomatis meluncur halus ke baris produk yang baru terbuka
     container.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -103,7 +133,7 @@ function prosesNotaWhatsApp() {
     window.open(`https://whatsapp.com{NOMOR_WA_ADMIN}&text=${teksWhatsApp}`, '_blank');
 }
 
-// Menghubungkan tombol menu grid prabayar bawaan HTML asli Anda ke sistem penyaringan JavaScript
+// Sinkronisasi tombol menu grid prabayar bawaan HTML Anda ke fungsi penyaring data
 document.addEventListener("DOMContentLoaded", function() {
     const btnLanjutHTML = document.querySelector(".btn-lanjut") || document.querySelector("button[onclick*='Pembayaran']");
     if (btnLanjutHTML) {
@@ -112,7 +142,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const kotakMenu = document.querySelectorAll(".service-box");
     kotakMenu.forEach(box => {
-        // Matikan fungsi link href asli bawaan HTML agar tidak memicu refresh halaman otomatis saat diklik
         box.addEventListener("click", function(event) {
             event.preventDefault();
         });
