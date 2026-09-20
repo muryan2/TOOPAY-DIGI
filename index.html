@@ -765,12 +765,9 @@
         }
 
         function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName) {
-            // Filter ketat agar kategori Pulsa tidak tercampur voucher/aktivasi
-            let globalProductsJson_local = typeof globalProductsJson !== "undefined" ? globalProductsJson : [];
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
 
-            // Ambil produk dari file products.json berdasarkan brand atau kategori yang cocok
             let matchedProducts = globalProductsJson.filter(p => {
                 const matchBrand = (p.brand && p.brand.toUpperCase().includes(brandName.toUpperCase())) ||
                                    (p.product_name && p.product_name.toUpperCase().includes(brandName.toUpperCase()));
@@ -782,8 +779,7 @@
                     }
                 }
                 return true;
-            });
-            // dummy disabled:  
+            }); 
                 (p.brand && p.brand.toUpperCase().includes(brandName.toUpperCase())) ||
                 (p.product_name && p.product_name.toUpperCase().includes(brandName.toUpperCase()))
             );
