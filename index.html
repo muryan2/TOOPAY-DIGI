@@ -977,3 +977,127 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
     </script>
 </body>
 </html>
+    </div>
+</div>
+
+<script>
+// Variabel global untuk menyimpan data dari products.json
+let semuaProduk = [];
+
+// 1. Fungsi mengambil data dari file data produk Anda
+function muatDataProduk() {
+    fetch('products.json')
+        .then(res => {
+            if (!res.ok) throw new Error('File products.json tidak merespon');
+            return res.json();
+        })
+        .then(data => {
+            semuaProduk = data;
+            // Secara default menampilkan data awal ke web
+            tampilkanSemuaKategori();
+        })
+        .catch(err => {
+            console.error('Gagal memuat produk:', err);
+            const container = document.querySelector(".product-list") || document.querySelector(".brand-list");
+            if (container) {
+                container.innerHTML = `<p style="text-align:center; color:red; font-size:0.8rem; padding:20px;">Gagal memuat produk: ${err.message}</p>`;
+            }
+        });
+}
+
+// 2. Fungsi merender list brand/operator (Jika sistem Anda menggunakan alur pilih operator dulu)
+function tampilkanSemuaKategori() {
+    const brandContainer = document.querySelector(".brand-list");
+    if (!brandContainer) return;
+
+    brandContainer.innerHTML = "";
+    
+    // Mengambil daftar kategori/operator unik yang ada di JSON Anda
+    const kumpulanKategori = [...new Set(semuaProduk.map(p => p.kategori || p.category || "Lainnya"))];
+
+    kumpulanKategori.forEach(kategori => {
+        const kartuBrand = document.createElement("div");
+        kartuBrand.className = "brand-card";
+        kartuBrand.onclick = () => saringProdukBerdasarkanKategori(kategori);
+
+        kartuBrand.innerHTML = `
+            <div class="brand-card-info">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>${kategori.toUpperCase()}</span>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color: #78909c; font-size: 0.8rem;"></i>
+        `;
+        brandContainer.appendChild(kartuBrand);
+    });
+}
+
+// 3. Fungsi merender list item produk dengan mempertahankan class .product-card asli Anda
+function renderDaftarProduk(daftarProduk) {
+    const productContainer = document.querySelector(".product-list") || document.querySelector(".brand-list");
+    if (!productContainer) return;
+
+    productContainer.innerHTML = "";
+
+    if (daftarProduk.length === 0) {
+        productContainer.innerHTML = "<p style='text-align:center; color:#78909c; font-size:0.8rem; padding:20px;'>Produk tidak ditemukan.</p>";
+        return;
+    }
+
+    daftarProduk.forEach(produk => {
+        // Toleransi nama variabel (bisa bahasa Indonesia atau Inggris)
+        const nama = produk.nama || produk.name || "Produk Tanpa Nama";
+        const harga = produk.harga || produk.price || 0;
+
+        const kartuProduk = document.createElement("div");
+        kartuProduk.className = "product-card";
+        kartuProduk.onclick = () => pilihProdukKeKonfirmasi(nama, harga);
+
+        // Mempertahankan struktur teks dalam kartu sesuai standar layout Anda
+        kartuProduk.innerHTML = `
+            <div class="brand-card-info">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-size: 0.85rem;">${nama}</span>
+                    <span style="font-size: 0.75rem; color: #78909c;">Otomatis 24 Jam</span>
+                </div>
+            </div>
+            <span style="color: var(--brand-accent); font-weight: 800; font-size: 0.9rem;">Rp ${harga.toLocaleString('id-ID')}</span>
+        `;
+        productContainer.appendChild(kartuProduk);
+    });
+}
+
+// 4. Fungsi memfilter item saat brand/layanan diklik
+function saringProdukBerdasarkanKategori(kategoriDipilih) {
+    const hasilFilter = semuaProduk.filter(p => {
+        const kat = p.kategori || p.category || "";
+        return kat.toLowerCase() === kategoriDipilih.toLowerCase();
+    });
+    renderDaftarProduk(hasilFilter);
+}
+
+// 5. Fungsi klik produk untuk mengisi bagian konfirmasi transaksi di bawahnya
+function pilihProdukKeKonfirmasi(namaProduk, hargaProduk) {
+    // Mengisi komponen nama produk terpilih di halaman
+    const targetNama = document.getElementById("nama-produk-terpilih") || document.querySelector("b:contains('-')") || {};
+    const targetHarga = document.getElementById("total-tagihan") || {};
+
+    if (document.getElementById("nama-produk-terpilih")) {
+        document.getElementById("nama-produk-terpilih").innerText = namaProduk;
+    }
+    if (document.getElementById("total-tagihan")) {
+        document.getElementById("total-tagihan").innerText = "Rp " + hargaProduk.toLocaleString('id-ID');
+    }
+
+    // Aksi tambahan opsional untuk mempermudah transaksi pengguna HP
+    console.log("Produk dipilih:", namaProduk, hargaProduk);
+}
+
+// Menjalankan fungsi utama saat halaman dimuat oleh browser HP
+window.onload = function() {
+    muatDataProduk();
+};
+</script>
+
+</body>
+</html>
