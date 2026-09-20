@@ -705,7 +705,7 @@
             htmlContent += `<div class="service-grid">`;
             appDatabase.prepaid.forEach(item => {
                 htmlContent += `
-                    <div class="service-box" onclick="handleCategoryClick('${item.title}', '${item.placeholder}', false)">
+                    <div class="service-box" onclick="handleBrandClick('${item.title}', '${item.placeholder}', false)">
                         <i class="fa-solid ${item.icon}"></i>
                         <span>${item.title}</span>
                     </div>
@@ -717,7 +717,7 @@
             htmlContent += `<div class="service-grid">`;
             appDatabase.postpaid.forEach(item => {
                 htmlContent += `
-                    <div class="service-box" onclick="handleCategoryClick('${item.title}', '${item.placeholder}', true)">
+                    <div class="service-box" onclick="handleBrandClick('${item.title}', '${item.placeholder}', true)">
                         <i class="fa-solid ${item.icon}"></i>
                         <span>${item.title}</span>
                     </div>
@@ -728,7 +728,7 @@
             container.innerHTML = htmlContent;
         }
 
-        function handleCategoryClick(categoryName, placeholderText, isPostpaidCategory) {
+        function handleBrandClick(categoryName, placeholderText, isPostpaidCategory) {
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
 
@@ -827,7 +827,20 @@ function filterBrands() {
         let activeTransactionData = {};
         let isPostpaidInquired = false;
 
+        
         function handleProductClick(sku, productName, price, isPostpaidCategory) {
+            const targetInput = document.getElementById("targetInput");
+            const targetVal = targetInput ? targetInput.value.trim() : "";
+            
+            if (!targetVal || targetVal.length < 4) {
+                alert("Silakan masukkan Nomor Tujuan / ID Pelanggan terlebih dahulu (minimal 4 digit).");
+                if (targetInput) targetInput.focus();
+                return;
+            }
+
+            openCheckoutModal(sku, productName, price, isPostpaidCategory, targetVal);
+        }
+unction handleProductClick(sku, productName, price, isPostpaidCategory) {
             const targetInputVal = document.getElementById('targetInput') ? document.getElementById('targetInput').value.trim() : '';
             
             if(!targetInputVal) {
