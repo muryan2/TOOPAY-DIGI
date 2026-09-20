@@ -509,6 +509,17 @@
             cursor: not-allowed;
         }
     </style>
+
+<script>
+    // Force unregister old service workers and clear cache to fix white/blank screen
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+                registration.unregister();
+            }
+        });
+    }
+</script>
 </head>
 <body>
 
