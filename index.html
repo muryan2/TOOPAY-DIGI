@@ -787,6 +787,15 @@
         }
 
 
+        
+        function validateAndRenderProducts(inputVal, categoryName, placeholderText, isPostpaidCategory) {
+            // Langsung panggil fungsi handler brand/kategori agar produk otomatis muncul
+            if (typeof handleBrandClick === "function") {
+                handleBrandClick(categoryName, placeholderText, isPostpaidCategory);
+            }
+        }
+
+
         function handleBrandClick(categoryName, placeholderText, isPostpaidCategory) {
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
@@ -845,6 +854,15 @@
                 `;
             });
             container.innerHTML = html;
+        }
+
+
+        
+        function validateAndRenderProducts(inputVal, categoryName, placeholderText, isPostpaidCategory) {
+            // Langsung panggil fungsi handler brand/kategori agar produk otomatis muncul
+            if (typeof handleBrandClick === "function") {
+                handleBrandClick(categoryName, placeholderText, isPostpaidCategory);
+            }
         }
 
 
