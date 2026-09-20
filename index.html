@@ -739,7 +739,7 @@
             htmlContent += `<div class="service-grid">`;
             appDatabase.prepaid.forEach(item => {
                 htmlContent += `
-                    <div class="service-box" onclick="handleBrandClick('${item.title}', '${item.placeholder}', false)">
+                    <div class="service-box" onclick="handleBrandClick('${item.title}', '${item.placeholder}', false, '${item.title}')">
                         <i class="fa-solid ${item.icon}"></i>
                         <span>${item.title}</span>
                     </div>
