@@ -802,10 +802,10 @@
 
             let matchedProducts = globalProductsJson.filter(p => {
                 const matchBrand = (p.brand && p.brand.toUpperCase().includes(brandName.toUpperCase())) ||
-                                   (p.product_name && p.product_name.toUpperCase().includes(brandName.toUpperCase()));
+                                   (p.product_name && (p.product_name || p.name || "").toUpperCase().includes(brandName.toUpperCase()));
                 if (!matchBrand) return false;
                 if (categoryName === "Pulsa") {
-                    const nameUp = p.product_name.toUpperCase();
+                    const nameUp = (p.product_name || p.name || "").toUpperCase();
                     if (nameUp.includes("VOUCHER") || nameUp.includes("AKTIVASI") || nameUp.includes("PERDANA")) {
                         return false;
                     }
