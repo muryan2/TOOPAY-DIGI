@@ -762,6 +762,31 @@
             container.innerHTML = htmlContent;
         }
 
+        
+        function renderProductList(productsToRender) {
+            const container = document.getElementById("productListContainer");
+            if (!container) return;
+            if (!productsToRender || productsToRender.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">Tidak ada produk ditemukan.</p>';
+                return;
+            }
+            let html = "";
+            productsToRender.forEach(p => {
+                let priceFormatted = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p.price || 0);
+                html += `
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center mb-2">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">${p.product_name || p.name}</h4>
+                            <p class="text-xs text-green-600 font-semibold">${priceFormatted}</p>
+                        </div>
+                        <button onclick="handleProductClick('${p.buyer_sku_code}', '${p.product_name || p.name}', ${p.price || 0}, false)" class="bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium active:bg-green-700">Beli</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+
         function handleBrandClick(categoryName, placeholderText, isPostpaidCategory) {
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
@@ -798,7 +823,32 @@
             container.innerHTML = htmlContent;
         }
 
-                function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName) {
+                
+        function renderProductList(productsToRender) {
+            const container = document.getElementById("productListContainer");
+            if (!container) return;
+            if (!productsToRender || productsToRender.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">Tidak ada produk ditemukan.</p>';
+                return;
+            }
+            let html = "";
+            productsToRender.forEach(p => {
+                let priceFormatted = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p.price || 0);
+                html += `
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center mb-2">
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">${p.product_name || p.name}</h4>
+                            <p class="text-xs text-green-600 font-semibold">${priceFormatted}</p>
+                        </div>
+                        <button onclick="handleProductClick('${p.buyer_sku_code}', '${p.product_name || p.name}', ${p.price || 0}, false)" class="bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium active:bg-green-700">Beli</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+
+        function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName) {
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
 
