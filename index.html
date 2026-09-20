@@ -797,9 +797,31 @@
 
 
         function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName) {
-    brandName = brandName || "";
-    categoryName = categoryName || "";
-    
+    // Jika yang diklik adalah kategori utama (misal: Pulsa, Data, Games) dan memiliki sub-brand di brandDatabase
+    if (window.brandDatabase && window.brandDatabase[brandName]) {
+        const headerContainer = document.getElementById("homeHeaderContainer");
+        if (headerContainer) headerContainer.style.display = "none";
+        
+        const container = document.getElementById("appRoot");
+        if (!container) return;
+
+        let html = `<div class="section-title"><button class="back-btn" onclick="renderHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${brandName}</div>`;
+        html += `<div class="brand-grid">`;
+        
+        window.brandDatabase[brandName].forEach(b => {
+            html += `
+                <div class="service-box" onclick="handleBrandClick('${b.name}', '${placeholderText}', ${isPostpaidCategory}, '${brandName}')">
+                    <i class="fa-solid ${b.icon || 'fa-sim-card'}"></i>
+                    <span>${b.name}</span>
+                </div>
+            `;
+        });
+        html += `</div>`;
+        container.innerHTML = html;
+        return;
+    }
+
+    // Jika yang diklik adalah brand spesifik (misal: TELKOMSEL, INDOSAT)
     const headerContainer = document.getElementById("homeHeaderContainer");
     if (headerContainer) headerContainer.style.display = "none";
 
@@ -810,7 +832,7 @@
 
     let matchedProducts = globalProductsJson.filter(p => {
         if (!p) return false;
-        const bName = brandName.toUpperCase();
+        const bName = (brandName || "").toUpperCase();
         const pBrand = (p.brand || "").toUpperCase();
         const pName = (p.product_name || p.name || "").toUpperCase();
         
