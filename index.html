@@ -1317,3 +1317,158 @@ function aktifkanSistemKlikLayanan() {
 </script>
 </body>
 </html>
+<script>
+let databaseProdukTooPay = [];
+const NOMOR_WA_ADMIN = "628123456789"; // Ganti dengan nomor WA Toko Anda
+
+function muatDataJSON() {
+    fetch('products.json')
+        .then(res => res.json())
+        .then(data => {
+            databaseProdukTooPay = data;
+            console.log("Sistem PPOB Siap!");
+            aktifkanKlikMenuLayanan();
+        })
+        .catch(err => console.error("Gagal memuat produk:", err));
+}
+
+function saringKategori(kategoriDipilih) {
+    const kataKunci = kategoriDipilih.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const hasilSaring = databaseProdukTooPay.filter(p => {
+        const katProduk = (p.category || "").toLowerCase().replace(/[^a-z0-9]/g, '');
+        return katProduk.includes(kataKunci) || kataKunci.includes(katProduk);
+    });
+
+    bukaLembarLayananDinamis(kategoriDipilih, hasilSaring);
+}
+
+// JURUS PROFESIONAL: Membuat Pop-up / Overlay Instan di Layar HP Pembeli agar Tidak Perlu Scroll ke Bawah
+function bukaLembarLayananDinamis(namaKategori, daftarProduk) {
+    // Cek jika overlay sudah ada, hapus dulu agar bersih
+    let overlay = document.getElementById("ppob-overlay-popup");
+    if (overlay) overlay.remove();
+
+    // Buat element overlay pop-up penuh layar ala aplikasi dana/gopay
+    overlay = document.createElement("div");
+    overlay.id = "ppob-overlay-popup";
+    overlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:flex-end; justify-content:center;";
+    
+    // Kotak konten modal meluncur dari bawah (Bottom Sheet)
+    const modalContent = document.createElement("div");
+    modalContent.style = "width:100%; max-width:480px; background:#ffffff; border-radius:20px 20px 0 0; padding:20px; box-sizing:border-box; max-height:80vh; overflow-y:auto; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); animation: slideUp 0.3s ease-out;";
+
+    // Tambahkan animasi meluncur ke CSS secara dinamis
+    if (!document.getElementById("ppob-animation-style")) {
+        const styleAnim = document.createElement("style");
+        styleAnim.id = "ppob-animation-style";
+        styleAnim.innerHTML = "@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }";
+        document.head.appendChild(styleAnim);
+    }
+
+    // Bagian Header Modal (Nama Menu & Tombol Tutup)
+    const headerModal = document.createElement("div");
+    headerModal.style = "display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e0e0e0; padding-bottom:10px;";
+    headerModal.innerHTML = `<h3 style='margin:0; color:#1b5e20; font-size:1.1rem; text-transform:uppercase;'><i class='fa-solid fa-basket-shopping'></i> Paket ${namaKategori}</h3>` +
+                           `<i class='fa-solid fa-xmark' style='cursor:pointer; font-size:1.3rem; color:#78909c;' onclick='document.getElementById("ppob-overlay-popup").remove()'></i>`;
+    modalContent.appendChild(headerModal);
+
+    // List Produk Grid di dalam Pop-up
+    const listContainer = document.createElement("div");
+    listContainer.style = "display:flex; flex-direction:column; gap:10px;";
+
+    if (daftarProduk.length === 0) {
+        listContainer.innerHTML = "<p style='text-align:center; color:#78909c; font-size:0.9rem; padding:20px;'>Produk untuk kategori ini sedang tidak tersedia.</p>";
+    } else {
+        daftarProduk.forEach(produk => {
+            const nama = produk.product_name || "Produk Tanpa Nama";
+            const harga = produk.price || 0;
+
+            const itemRow = document.createElement("div");
+            itemRow.style = "background:#f9fbf9; border:1px solid #c8e6c9; border-radius:12px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; transition:background 0.2s;";
+            
+            // Efek sentuhan di HP
+            itemRow.ontouchstart = () => itemRow.style.background = "#e8f5e9";
+            itemRow.ontouchend = () => itemRow.style.background = "#f9fbf9";
+            
+            itemRow.onclick = function() {
+                // Tutup pop-up
+                overlay.remove();
+                // Kirim data ke form konfirmasi pesanan asli Anda
+                isiOtomatisKonfirmasiPesanan(nama, harga);
+            };
+
+            itemRow.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px; text-align:left;">
+                    <i class="fa-solid fa-mobile-screen-button" style="color:#2e7d32; font-size:1.2rem;"></i>
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="font-size:0.85rem; font-weight:bold; color:#263238;">${nama}</span>
+                        <span style="font-size:0.7rem; color:#78909c;">Proses Otomatis</span>
+                    </div>
+                </div>
+                <span style="color:#1b5e20; font-weight:800; font-size:0.9rem; white-space:nowrap;">Rp ${harga.toLocaleString('id-ID')}</span>
+            `;
+            listContainer.appendChild(itemRow);
+        });
+    }
+
+    modalContent.appendChild(listContainer);
+    overlay.appendChild(modalContent);
+    document.body.appendChild(overlay);
+
+    // Menutup pop-up jika pembeli mengklik area luar modal
+    overlay.onclick = function(e) {
+        if (e.target === overlay) overlay.remove();
+    };
+}
+
+function isiOtomatisKonfirmasiPesanan(nama, harga) {
+    const targetNama = document.getElementById("nama-produk-terpilih") || document.querySelector(".box-konfirmasi p span");
+    const targetHarga = document.getElementById("total-tagihan");
+    
+    if (targetNama) targetNama.innerText = nama;
+    if (targetHarga) targetHarga.innerText = "Rp " + harga.toLocaleString('id-ID');
+    
+    // Gulir otomatis ke bagian form pengisian nomor HP di bawah setelah produk dipilih dari pop-up
+    const formBawah = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
+    if (formBawah) formBawah.scrollIntoView({ behavior: 'smooth' });
+}
+
+function prosesOrderWhatsApp() {
+    const elemenNama = document.getElementById("nama-produk-terpilih") || document.querySelector(".box-konfirmasi p span");
+    const elemenHarga = document.getElementById("total-tagihan");
+    
+    const produk = elemenNama ? elemenNama.innerText.trim() : "-";
+    const total = elemenHarga ? elemenHarga.innerText.trim() : "-";
+    const pelanggan = document.getElementById("input-pelanggan")?.value || "";
+    const waUser = document.getElementById("input-wa")?.value || "";
+
+    if (produk === "-" || produk === "" || !pelanggan || !waUser) {
+        alert("⚠️ Mohon pilih paket produk dan lengkapi Nomor HP Tujuan & WhatsApp Anda!");
+        return;
+    }
+
+    const drafPesan = `Halo TooPay Digi, saya ingin order paket berikut:%0A----------------------------------------%0A📋 *Produk:* ${produk}%0A🆔 *No.Tujuan / ID:* ${pelanggan}%0A💰 *Total Tagihan:* ${total}%0A📱 *WhatsApp Pembeli:* ${waUser}%0A----------------------------------------%0AMohon segera diproses, terima kasih!`;
+    window.open(`https://whatsapp.com{NOMOR_WA_ADMIN}&text=${drafPesan}`, '_blank');
+}
+
+function aktifkanKlikMenuLayanan() {
+    const tombolMenu = document.querySelectorAll(".service-box");
+    tombolMenu.forEach(box => {
+        box.addEventListener("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const namaKategori = box.innerText.trim();
+            saringKategori(namaKategori);
+        });
+        box.style.cursor = "pointer";
+    });
+
+    const btnPay = document.querySelector(".btn-lanjut");
+    if (btnPay) btnPay.setAttribute("onclick", "prosesOrderWhatsApp()");
+}
+
+window.onload = muatDataJSON;
+</script>
+</body>
+</html>
