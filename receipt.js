@@ -25,29 +25,18 @@ function saringLayananPrabayar(kategoriDipilih) {
 }
 
 function renderDaftarProdukTooPay(daftarProduk) {
-    // JURUS PINTAR: Cari kontainer bawaan template, jika tidak ada, cari pembungkus Layanan Prabayar
-    let container = document.querySelector(".product-list") || document.getElementById("produk-container");
+    let container = document.querySelector(".product-list") || document.getElementById("produk-container") || document.getElementById("auto-product-container");
     
     if (!container) {
-        // Jika kontainer tidak ditemukan, kita buat otomatis di bawah menu Prabayar agar tidak merusak tampilan atas
-        container = document.getElementById("auto-product-container");
-        if (!container) {
-            container = document.createElement("div");
-            container.id = "auto-product-container";
-            // Berikan style agar desain card produk Anda tetap rapi dan tidak berantakan
-            container.style.display = "flex";
-            container.style.flexDirection = "column";
-            container.style.gap = "10px";
-            container.style.margin = "20px 0";
-            container.style.padding = "0 4px";
-            
-            // Pasang kontainer baru ini tepat sebelum kotak Konfirmasi Pesanan
-            const konfirmasiBox = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
-            if (konfirmasiBox) {
-                konfirmasiBox.parentNode.insertBefore(container, konfirmasiBox);
-            } else {
-                document.body.appendChild(container);
-            }
+        container = document.createElement("div");
+        container.id = "auto-product-container";
+        container.style = "display: flex; flex-direction: column; gap: 10px; margin: 20px 0; padding: 0 4px; width: 100%; box-sizing: border-box;";
+        
+        const konfirmasiBox = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
+        if (konfirmasiBox) {
+            konfirmasiBox.parentNode.insertBefore(container, konfirmasiBox);
+        } else {
+            document.body.appendChild(container);
         }
     }
 
@@ -58,9 +47,8 @@ function renderDaftarProdukTooPay(daftarProduk) {
         return;
     }
 
-    // Buat Judul Penanda Paket yang sedang dibuka
     const judulPaket = document.createElement("div");
-    judulPaket.style = "font-size: 0.85rem; font-weight: 800; color: #1b5e20; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;";
+    judulPaket.style = "font-size: 0.85rem; font-weight: 800; color: #1b5e20; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;";
     judulPaket.innerHTML = `<i class="fa-solid fa-basket-shopping"></i> Kumpulan Paket Pilihan:`;
     container.appendChild(judulPaket);
 
@@ -69,13 +57,12 @@ function renderDaftarProdukTooPay(daftarProduk) {
         const harga = produk.price || 0;
 
         const kartuProduk = document.createElement("div");
-        
-        // Mempertahankan class bawaan template asli Anda (.product-card)
         kartuProduk.className = "product-card";
-        
-        // JURUS CADANGAN: Jika class .product-card bawaan template Anda hilang, berikan style dasar agar tetap cantik
-        kartuProduk.style = "background: #ffffff; border: 1px solid #c8e6c9; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02);";
-        kartuProduk.onclick = () => pilihProdukKeKonfirmasi(nama, harga);
+        kartuProduk.style = "background: #ffffff; border: 1px solid #c8e6c9; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02); width: 100%; box-sizing: border-box;";
+        kartuProduk.onclick = function(e) {
+            e.preventDefault();
+            pilihProdukKeKonfirmasi(nama, harga);
+        };
 
         kartuProduk.innerHTML = `
             <div style="display: flex; align-items: center; gap: 12px; font-weight: 700; color: #263238; font-size: 0.9rem;">
@@ -90,7 +77,6 @@ function renderDaftarProdukTooPay(daftarProduk) {
         container.appendChild(kartuProduk);
     });
     
-    // Layar HP otomatis meluncur halus ke baris produk yang baru terbuka
     container.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -133,30 +119,45 @@ function prosesNotaWhatsApp() {
     window.open(`https://whatsapp.com{NOMOR_WA_ADMIN}&text=${teksWhatsApp}`, '_blank');
 }
 
-// Sinkronisasi tombol menu grid prabayar bawaan HTML Anda ke fungsi penyaring data
+// Inisialisasi Event Listener dengan mematikan fungsi tautan bawaan HTML secara paksa
 document.addEventListener("DOMContentLoaded", function() {
     const btnLanjutHTML = document.querySelector(".btn-lanjut") || document.querySelector("button[onclick*='Pembayaran']");
     if (btnLanjutHTML) {
         btnLanjutHTML.setAttribute("onclick", "prosesNotaWhatsApp()");
     }
 
-    const kotakMenu = document.querySelectorAll(".service-box");
+    const kotakMenu = document.querySelectorAll(".service-box") || document.querySelectorAll("a");
     kotakMenu.forEach(box => {
-        box.addEventListener("click", function(event) {
-            event.preventDefault();
-        });
-
         const textMenu = box.innerText.trim().toLowerCase();
         
-        if (textMenu.includes("pulsa")) box.setAttribute("onclick", "saringLayananPrabayar('Pulsa')");
-        else if (textMenu.includes("paket data") || textMenu.includes("data")) box.setAttribute("onclick", "saringLayananPrabayar('Data')");
-        else if (textMenu.includes("game")) box.setAttribute("onclick", "saringLayananPrabayar('Games')");
-        else if (textMenu.includes("voucher")) box.setAttribute("onclick", "saringLayananPrabayar('Aktivasi Voucher')");
-        else if (textMenu.includes("e-money") || textMenu.includes("money")) box.setAttribute("onclick", "saringLayananPrabayar('E-Money')");
-        else if (textMenu.includes("tv")) box.setAttribute("onclick", "saringLayananPrabayar('TV')");
-        else if (textMenu.includes("aktif")) box.setAttribute("onclick", "saringLayananPrabayar('Masa Aktif')");
-        else if (textMenu.includes("perdana")) box.setAttribute("onclick", "saringLayananPrabayar('Aktivasi Perdana')");
+        // Cek jika elemen ini merupakan tombol menu layanan prabayar
+        let kategori = "";
+        if (textMenu.includes("pulsa")) kategori = "Pulsa";
+        else if (textMenu.includes("paket data") || textMenu.includes("data")) kategori = "Data";
+        else if (textMenu.includes("game")) kategori = "Games";
+        else if (textMenu.includes("voucher") && !textMenu.includes("aktivasi")) kategori = "Voucher";
+        else if (textMenu.includes("e-money") || textMenu.includes("money")) kategori = "E-Money";
+        else if (textMenu.includes("pln")) kategori = "PLN";
+        else if (textMenu.includes("sms") || textMenu.includes("telp")) kategori = "Paket SMS & Telpon";
+        else if (textMenu.includes("aktivasi voucher")) kategori = "Aktivasi Voucher";
+        else if (textMenu.includes("tv")) kategori = "TV";
+        else if (textMenu.includes("aktif")) kategori = "Masa Aktif";
+        else if (textMenu.includes("perdana")) kategori = "Aktivasi Perdana";
+
+        if (kategori !== "") {
+            // Matikan href secara mutlak di level HTML
+            box.setAttribute("href", "javascript:void(0);");
+            box.removeAttribute("target");
+            
+            // Suntikkan fungsi saring produk
+            box.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                saringLayananPrabayar(kategori);
+                return false;
+            };
+        }
     });
 });
 
-window.onload = muatDataProduk;
+muatDataProduk();
