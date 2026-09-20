@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/digiflazz",
-      "destination": "/functions/api/transaksi"
-    }
-  ]
-}
