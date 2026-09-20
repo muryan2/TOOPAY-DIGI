@@ -520,6 +520,29 @@
         });
     }
 </script>
+
+<script>
+    window.onerror = function (message, source, lineno, colno, error) {
+        // Tampilkan error di layar untuk debugging
+        var errorDiv = document.createElement("div");
+        errorDiv.style.position = "fixed";
+        errorDiv.style.top = "50%";
+        errorDiv.style.left = "50%";
+        errorDiv.style.transform = "translate(-50%, -50%)";
+        errorDiv.style.background = "rgba(255,0,0,0.9)";
+        errorDiv.style.color = "white";
+        errorDiv.style.padding = "20px";
+        errorDiv.style.zIndex = "999999";
+        errorDiv.style.borderRadius = "10px";
+        errorDiv.style.fontFamily = "monospace";
+        errorDiv.style.maxWidth = "90%";
+        errorDiv.style.wordWrap = "break-word";
+        errorDiv.innerHTML = "<strong>FATAL JS ERROR:</strong><br>" + message + "<br><small>At: " + source + ":" + lineno + ":" + colno + "</small>";
+        document.body.appendChild(errorDiv);
+        console.error("Full Error Object:", error);
+        return true; // Mencegah error ditampilkan di konsol default saja
+    };
+</script>
 </head>
 <body>
 
