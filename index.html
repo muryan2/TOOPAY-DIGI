@@ -797,6 +797,23 @@
 
 
         function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName) {
+            if (!brandName) brandName = "";
+            document.getElementById('homeHeaderContainer').style.display = 'none';
+            const container = document.getElementById('appRoot');
+
+            let matchedProducts = globalProductsJson.filter(p => {
+                const bName = brandName ? brandName.toUpperCase() : "";
+                const matchBrand = (p.brand && p.brand.toUpperCase().includes(bName)) ||
+                                   (p.product_name && (p.product_name || p.name || "").toUpperCase().includes(bName));
+                if (!matchBrand) return false;
+                if (categoryName === "Pulsa") {
+                    const nameUp = (p.product_name || p.name || "").toUpperCase();
+                    if (nameUp.includes("VOUCHER") || nameUp.includes("AKTIVASI") || nameUp.includes("PERDANA")) {
+                        return false;
+                    }
+                }
+                return true;
+            });
             document.getElementById('homeHeaderContainer').style.display = 'none';
             const container = document.getElementById('appRoot');
 
