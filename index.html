@@ -1153,3 +1153,167 @@ muatDataProduk();
 </script>
 </body>
 </html>
+
+<script>
+// 1. Inisialisasi data produk dari products.json Anda
+let databaseLayananTooPay = [];
+const NOMOR_WA_PEMILIK = "628123456789"; // Ganti dengan nomor WhatsApp Toko Anda
+
+fetch('products.json')
+    .then(res => res.json())
+    .then(data => {
+        databaseLayananTooPay = data;
+        console.log("Koneksi database products.json sukses!");
+        aktifkanSistemKlikLayanan();
+    })
+    .catch(err => console.error("Gagal memuat produk:", err));
+
+// 2. Fungsi memfilter item saat menu prabayar diklik (menyesuaikan kategori di products.json)
+function saringKategoriLayanan(kategoriDipilih) {
+    const hasilSaring = databaseLayananTooPay.filter(p => {
+        const kat = p.category || "";
+        return kat.toLowerCase() === kategoriDipilih.toLowerCase();
+    });
+    tampilkanKartuProdukKeWeb(hasilSaring);
+}
+
+// 3. Fungsi otomatis membuat area kontainer dan memunculkan kartu produk paket pilihan
+function tampilkanKartuProdukKeWeb(daftarProduk) {
+    // Mencari kontainer produk bawaan template asli Anda (.product-list)
+    let container = document.querySelector(".product-list");
+    
+    // Jika kontainer bawaan disembunyikan oleh template asli Anda, kita tampilkan secara paksa
+    if (container) {
+        container.style.display = "flex";
+        container.style.flexDirection = "column";
+        container.style.gap = "10px";
+        container.innerHTML = "";
+    } else {
+        // Fallback pintar: jika kontainer bawaan tidak ketemu, buat area otomatis tepat di atas Konfirmasi Pesanan
+        container = document.getElementById("auto-product-container");
+        if (!container) {
+            container = document.createElement("div");
+            container.id = "auto-product-container";
+            container.style = "display: flex; flex-direction: column; gap: 10px; margin: 25px 0; padding: 0 4px; width: 100%; box-sizing: border-box;";
+            const boxKonfirmasi = document.querySelector(".box-konfirmasi") || document.getElementById("section-konfirmasi");
+            if (boxKonfirmasi) boxKonfirmasi.parentNode.insertBefore(container, boxKonfirmasi);
+            else document.body.appendChild(container);
+        }
+        container.innerHTML = "";
+    }
+
+    if (daftarProduk.length === 0) {
+        container.innerHTML = "<p style='text-align:center; color:#78909c; font-size:0.85rem; padding:20px; background:#ffffff; border-radius:12px; border:1px solid #c8e6c9;'>Produk paket belum tersedia.</p>";
+        return;
+    }
+
+    daftarProduk.forEach(produk => {
+        const nama = produk.product_name || "Produk Tanpa Nama";
+        const harga = produk.price || 0;
+
+        const kartu = document.createElement("div");
+        kartu.className = "product-card"; // Mempertahankan nama class card visual bawaan template Anda
+        kartu.style = "background: #ffffff; border: 1px solid #c8e6c9; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.02); width: 100%; box-sizing: border-box;";
+        kartu.onclick = function(e) {
+            e.preventDefault();
+            kirimKeFormKonfirmasi(nama, harga);
+        };
+
+        kartu.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px; font-weight: 700; color: #263238; font-size: 0.9rem;">
+                <i class="fa-solid fa-mobile-screen-button" style="font-size: 1.4rem; color: #2e7d32;"></i>
+                <div style="display: flex; flex-direction: column; gap: 2px; text-align: left;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #263238;">${nama}</span>
+                    <span style="font-size: 0.72rem; color: #78909c; font-weight: normal;">Proses Otomatis Instan</span>
+                </div>
+            </div>
+            <span style="color: #2e7d32; font-weight: 800; font-size: 0.95rem; white-space: nowrap; margin-left: 10px;">Rp ${harga.toLocaleString('id-ID')}</span>
+        `;
+        container.appendChild(kartu);
+    });
+    
+    container.scrollIntoView({ behavior: 'smooth' });
+}
+
+// 4. Fungsi otomatis mengisi kolom nama produk dan harga tagihan di bagian formulir bawah Anda
+function kirimKeFormKonfirmasi(nama, harga) {
+    const elemenNama = document.getElementById("nama-produk-terpilih") || document.querySelector(".box-konfirmasi p span");
+    const elemenHarga = document.getElementById("total-tagihan");
+
+    if (elemenNama) elemenNama.innerText = nama;
+    if (elemenHarga) elemenHarga.innerText = "Rp " + harga.toLocaleString('id-ID');
+
+    const formBawah = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
+    if (formBawah) formBawah.scrollIntoView({ behavior: 'smooth' });
+}
+
+// 5. Fungsi kirim draf nota pemesanan pelanggan langsung menuju WhatsApp Admin
+function prosesOrderWhatsApp() {
+    const elemenNama = document.getElementById("nama-produk-terpilih") || document.querySelector(".box-konfirmasi p span");
+    const elemenHarga = document.getElementById("total-tagihan");
+    
+    const produk = elemenNama ? elemenNama.innerText.trim() : "-";
+    const total = elemenHarga ? elemenHarga.innerText.trim() : "-";
+    
+    const inputs = document.querySelectorAll(".box-konfirmasi input, #section-konfirmasi input");
+    const pelanggan = inputs[0] ? inputs[0].value : "";
+    const waUser = inputs[1] ? inputs[1].value : "";
+
+    if (produk === "-" || produk === "" || !pelanggan || !waUser) {
+        alert("⚠️ Mohon pilih paket produk dan lengkapi Nomor HP Tujuan & Nomor WhatsApp Anda!");
+        return;
+    }
+
+    const drafPesan = `Halo TooPay Digi, saya ingin beli paket berikut:%0A` +
+                      `----------------------------------------%0A` +
+                      `📋 *Produk:* ${produk}%0A` +
+                      `🆔 *No.Tujuan / ID:* ${pelanggan}%0A` +
+                      `💰 *Total Tagihan:* ${total}%0A` +
+                      `📱 *WhatsApp Pembeli:* ${waUser}%0A` +
+                      `----------------------------------------%0A` +
+                      `Mohon segera diproses transaksi saya, terima kasih!`;
+
+    window.open(`https://whatsapp.com{NOMOR_WA_PEMILIK}&text=${drafPesan}`, '_blank');
+}
+
+// 6. Fungsi otomatis mengunci elemen menu grid bawaan template asli Anda
+function aktifkanSistemKlikLayanan() {
+    const kumpulanTombol = document.querySelectorAll(".service-box");
+    
+    kumpulanTombol.forEach(tombol => {
+        // Matikan fungsi link href asli agar tidak memicu reload halaman
+        tombol.addEventListener("click", function(e) {
+            e.preventDefault();
+        });
+
+        const teksTombol = tombol.innerText.trim().toLowerCase();
+        let kategoriKunci = "";
+
+        if (teksTombol.includes("pulsa")) kategoriKunci = "Pulsa";
+        else if (teksTombol.includes("data")) kategoriKunci = "Data";
+        else if (teksTombol.includes("game")) kategoriKunci = "Games";
+        else if (teksTombol.includes("voucher")) kategoriKunci = "Aktivasi Voucher";
+        else if (teksTombol.includes("money")) kategoriKunci = "E-Money";
+        else if (teksTombol.includes("tv")) kategoriKunci = "TV";
+        else if (teksTombol.includes("aktif")) kategoriKunci = "Masa Aktif";
+        else if (teksTombol.includes("perdana")) kategoriKunci = "Aktivasi Perdana";
+
+        if (kategoriKunci !== "") {
+            tombol.setAttribute("href", "javascript:void(0);");
+            tombol.onclick = function(e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                saringKategoriLayanan(kategoriKunci);
+                return false;
+            };
+            tombol.style.cursor = "pointer";
+        }
+    });
+
+    const tombolBayarHTML = document.querySelector(".btn-lanjut");
+    if (tombolBayarHTML) {
+        tombolBayarHTML.setAttribute("onclick", "prosesOrderWhatsApp()");
+    }
+}
+</script>
+</body>
+</html>
