@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="https://cloudflare.com">
     <style>
         :root {
-            --brand-primary: #1b5e20;      /* Hijau Tua Tegas */
-            --brand-accent: #2e7d32;       /* Hijau Standar Tegas */
-            --brand-light: #e8f5e9;        /* Hijau Muda Soft */
+            --brand-primary: #1b5e20;
+            --brand-accent: #2e7d32;
+            --brand-light: #e8f5e9;
             --card-bg: #ffffff;
             --border-clr: #c8e6c9;
             --text-clr: #263238;
@@ -99,7 +99,6 @@
         <span id="judul-brand">Memuat...</span>
     </div>
 
-    <!-- Tempat Nominal Paket Muncul -->
     <div id="productListContainer" class="product-list">
         <p style="text-align: center; color: #78909c; font-size: 0.9rem; padding: 20px;">
             <i class="fa-solid fa-spinner fa-spin"></i> Menghubungkan ke database Digiflazz...
@@ -110,14 +109,12 @@
 <script>
     let globalProductsJson = [];
 
-    // 1. Ambil parameter brand & kategori dari URL browser (dioper dari index.html)
     const urlParams = new URLSearchParams(window.location.search);
     const brandName = urlParams.get('brand');
     const categoryName = urlParams.get('category') || 'Pulsa';
 
     async function loadProductsJson() {
         try {
-            // Ambil data dari file products.json hasil sinkronisasi backend Anda
             const res = await fetch('products.json');
             if (res.ok) {
                 globalProductsJson = await res.json();
@@ -129,7 +126,6 @@
         }
     }
 
-    // 2. Filter data secara akurat sesuai struktur Digiflazz Anda (product_name, brand, price)
     function renderFilteredProducts() {
         if (!brandName) {
             kembaliKeHome();
@@ -139,25 +135,39 @@
         document.getElementById("judul-brand").innerText = brandName.toUpperCase();
         const container = document.getElementById("productListContainer");
 
-        // Lacak & saring data berdasarkan brand dan kategori dari file products.json asli Anda
+        // JURUS ANTI-GAGAL: Pecah kata kunci menjadi potongan huruf kecil bebas simbol
+        const kataKunciMurni = brandName.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+        
+        // Aturan potongan kata khusus (misal: "mobile legend" dipotong jadi "mobile")
+        const kataKunciSingkat = kataKunciMurni.substring(0, 5); 
+
         const matchedProducts = globalProductsJson.filter(p => {
             if (!p) return false;
-            const bName = brandName.toUpperCase();
-            const pBrand = (p.brand || "").toUpperCase();
-            const pName = (p.product_name || p.name || "").toUpperCase();
+            
+            // Ubah semua data Digiflazz ke huruf kecil murni untuk menyamakan kasta pencarian
+            const pBrand = (p.brand || "").toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+            const pName = (p.product_name || p.name || "").toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+            const pCat = (p.category || "").toLowerCase().replace(/[^a-z0-9]/g, '').trim();
 
-            const matchBrand = (pBrand && pBrand.includes(bName)) || (pName && pName.includes(bName));
-            if (!matchBrand) return false;
+            // Aturan 1: Cari kecocokan kata kunci pada field brand JSON
+            const cocokBrand = pBrand.includes(kataKunciMurni) || kataKunciMurni.includes(pBrand) || pBrand.includes(kataKunciSingkat);
+            
+            // Aturan 2: Cari kecocokan kata kunci pada field nama produk JSON
+            const cocokNama = pName.includes(kataKunciMurni) || pName.includes(kataKunciSingkat);
 
-            if (categoryName === "Pulsa") {
-                if (pName.includes("VOUCHER") || pName.includes("AKTIVASI") || pName.includes("PERDANA")) {
+            if (!cocokBrand && !cocokNama) return false;
+
+            // Filter Kategori Bawaan Template Anda
+            const katMenu = categoryName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (katMenu === "pulsa") {
+                if (pName.includes("voucher") || pName.includes("aktivasi") || pName.includes("perdana") || pCat.includes("data") || pCat.includes("game")) {
                     return false;
                 }
             }
             return true;
         });
 
-        // Urutkan harga dari termurah
+        // Urutkan harga nominal terkecil ke terbesar
         matchedProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
         container.innerHTML = "";
 
@@ -166,7 +176,6 @@
             return;
         }
 
-        // 3. Cetak produk menggunakan susunan class orisinal Anda
         matchedProducts.forEach(p => {
             const productName = p.product_name || p.name;
             const priceFormatted = new Intl.NumberFormat("id-ID", { 
@@ -177,8 +186,8 @@
 
             const kartu = document.createElement("div");
             kartu.className = "product-card";
+            kartu.style.cursor = "pointer";
             
-            // Saat nominal dipilih, simpan ke localStorage dan kembali ke halaman utama
             kartu.onclick = function() {
                 localStorage.setItem("item_terpilih_nama", productName);
                 localStorage.setItem("item_terpilih_harga", priceFormatted);
