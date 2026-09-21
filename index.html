@@ -978,40 +978,41 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
 </body>
 </html>
 
-    // ====== LOGIKA PENYAMBUNG DAN PENYARING DIGIFLAZZ ======
+    // ====== LOGIKA PENAMPIL PRODUK SEBELUM FORM KONFIRMASI ======
     
-    // Fungsi ini otomatis berjalan ketika salah satu sub-kategori/brand (misal: TELKOMSEL / MOBILE LEGENDS) dipilih
-    function tampilkanProdukDigiflazz(namaBrand, namaKategori) {
-        // Cari kontainer list produk bawaan dari template asli Anda
+    // Fungsi ini otomatis dipanggil ketika brand (misal: TELKOMSEL / MOBILE LEGEND) selesai dipilih oleh pembeli
+    function tampilkanDaftarProdukDigiflazz(namaBrand, namaKategori) {
+        // Mencari kontainer bawaan dari template asli Anda (class .brand-list atau .product-list)
         const container = document.querySelector(".product-list") || document.querySelector(".brand-list") || document.getElementById("appContainer");
         if (!container) return;
 
-        // Ambil data dari variabel global asli Anda
+        // Bersihkan halaman lama untuk mencetak deretan nominal produk baru
+        container.innerHTML = "";
+        container.style.display = "flex";
+        container.style.flexDirection = "column";
+        container.style.gap = "10px";
+
         if (!globalProductsJson || globalProductsJson.length === 0) {
-            console.log("Variabel globalProductsJson masih kosong.");
+            container.innerHTML = "<p style='text-align:center; color:#78909c; font-size:14px; padding:20px;'>Database produk kosong atau belum termuat. Silakan muat ulang halaman.</p>";
             return;
         }
 
-        // Saring produk berdasarkan Brand dan Kategori (Pulsa / Data / Games / TV, dll)
+        // Saring data berdasarkan brand (misal: TELKOMSEL) dan kategori (misal: Pulsa / Data / Games)
         const hasilSaring = globalProductsJson.filter(p => {
-            const brandSama = (p.brand || "").toLowerCase() === namaBrand.toLowerCase();
+            const brandCocok = (p.brand || "").toLowerCase() === namaBrand.toLowerCase();
             
-            // Toleransi pencarian kategori (misal Paket SMS & TELP cocok dengan Paket SMS & Telpon di JSON)
             const katJson = (p.category || "").toLowerCase().replace(/[^a-z0-9]/g, '');
             const katMenu = namaKategori.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const kategoriSama = katJson.includes(katMenu) || katMenu.includes(katJson);
+            const kategoriCocok = katJson.includes(katMenu) || katMenu.includes(katJson);
             
-            return brandSama && kategoriSama;
+            return brandCocok && kategoriCocok;
         });
 
-        // Urutkan nominal dari harga termurah agar rapi
+        // Urutkan nominal harga dari yang termurah
         hasilSaring.sort((a, b) => a.price - b.price);
 
-        // Bersihkan area menu lama, ganti langsung dengan daftar nominal produk (UX Instan di satu halaman!)
-        container.innerHTML = "";
-        
         if (hasilSaring.length === 0) {
-            container.innerHTML = `<p style="text-align:center; padding:20px; font-size:14px; color:#78909c;">Produk ${namaBrand} untuk layanan ini sedang tidak tersedia.</p>`;
+            container.innerHTML = `<p style='text-align:center; color:#78909c; font-size:14px; padding:20px;'>Produk ${namaBrand} untuk layanan ini sedang tidak tersedia.</p>`;
             return;
         }
 
@@ -1020,7 +1021,7 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
             const kartu = document.createElement("div");
             kartu.className = "product-card";
             
-            // Logika Klik: saat nominal dipilih, isi langsung ke formulir Konfirmasi Pesanan bawah
+            // Saat nominal dipilih, otomatis isi kolom Konfirmasi Pesanan di bagian bawah
             kartu.onclick = function() {
                 const targetNama = document.getElementById("nama-produk-terpilih") || document.querySelector(".box-konfirmasi p span");
                 const targetHarga = document.getElementById("total-tagihan");
@@ -1028,7 +1029,7 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
                 if (targetNama) targetNama.innerText = produk.product_name;
                 if (targetHarga) targetHarga.innerText = "Rp " + produk.price.toLocaleString('id-ID');
                 
-                // Layar HP meluncur halus ke form pengisian nomor/tombol bayar di bawah
+                // Layar HP meluncur halus ke form konfirmasi pesanan di bawah
                 const formBawah = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
                 if (formBawah) formBawah.scrollIntoView({ behavior: 'smooth' });
             };
@@ -1047,12 +1048,9 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
         });
     }
 
-    // Suntikkan fungsi interseptor ke sistem menu bawaan Anda agar saat operator diklik, fungsi di atas langsung terpicu
-    function kaitkanSistemPenyaringOtomatis() {
-        // Melacak fungsi render brand bawaan template Anda
-        const fungsiAsliRenderBrand = window.tampilkanBrandAtauKategori || window.renderBrands; 
-        
-        // Skrip ini memantau perubahan halaman Anda secara berkala di latar belakang
+    // Interseptor pintar: menyambungkan fungsi render brand bawaan template Anda menuju fungsi penampil produk di atas
+    function sambungkanKeFungsiCetakProduk() {
+        // Melacak fungsi bawaan yang dijalankan saat brand operator diklik di template asli Anda
         setInterval(() => {
             const kartuBrand = document.querySelectorAll(".brand-card");
             kartuBrand.forEach(card => {
@@ -1060,23 +1058,24 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
                     card.setAttribute("data-hooked", "true");
                     
                     const namaBrand = card.innerText.trim();
-                    // Mencari tahu kategori induk yang sedang aktif (Pulsa / Data / Games)
+                    // Mendeteksi kategori induk (Pulsa / Data / Games) yang sedang aktif di layar pembeli
                     const kategoriAktif = document.querySelector(".daftar-produk-title")?.innerText || "Pulsa";
                     
                     card.onclick = function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        tampilkanProdukDigiflazz(namaBrand, kategoriAktif);
+                        // Alihkan alur untuk mencetak list produk nominal Digiflazz Anda
+                        tampilkanDaftarProdukDigiflazz(namaBrand, kategoriAktif);
                     };
                 }
             });
-        }, 500);
+        }, 300);
     }
 
-    // Jalankan pemuatan products.json bawaan commit awal Anda
+    // Jalankan seluruh pemuatan fungsi saat dokumen selesai dimuat browser HP
     document.addEventListener("DOMContentLoaded", function() {
         loadProductsJson();
-        kaitkanSistemPenyaringOtomatis();
+        sambungkanKeFungsiCetakProduk();
     });
 </script>
 </body>
