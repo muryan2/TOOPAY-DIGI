@@ -830,23 +830,33 @@
         return;
     }
 
-    let matchedProducts = globalProductsJson.filter(p => {
-        if (!p) return false;
-        const bName = (brandName || "").toUpperCase();
-        const pBrand = (p.brand || "").toUpperCase();
-        const pName = (p.product_name || p.name || "").toUpperCase();
-        
-        const matchBrand = (pBrand && pBrand.includes(bName)) || (pName && pName.includes(bName));
-        if (!matchBrand) return false;
-        
-        if (categoryName === "Pulsa") {
-            if (pName.includes("VOUCHER") || pName.includes("AKTIVASI") || pName.includes("PERDANA")) {
-                return false;
-            }
-        }
-        return true;
-    });
+            let matchedProducts = globalProductsJson.filter(p => {
+                const bName = (brandName || "").toUpperCase();
+                const pBrand = (p.brand || "").toUpperCase();
+                const pName = (p.product_name || p.name || "").toUpperCase();
 
+                const matchBrand = (pBrand && pBrand.includes(bName)) || (pName && pName.includes(bName));
+                
+                if (categoryName === "Pulsa") {
+                    if (pName.includes("VOUCHER") || pName.includes("AKTIVASI") || pName.includes("PERDANA")) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            // JURUS UTAMA: Cetak produk hasil saringan ke dalam layout asli Anda
+            const container = document.getElementById("appRoot");
+            if (container) {
+                let html = `<div class="section-title"><button class="back-btn" onclick="renderHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${brandName} - ${categoryName || 'Pilihan'}</div>`;
+                html += `<div id="productListContainer" class="product-list"></div>`;
+                container.innerHTML = html;
+                
+                // Jalankan fungsi render bawaan Anda secara estetik
+                renderProductList(matchedProducts);
+            }
+            return;
+        }
     if (typeof renderProductList === "function") {
         renderProductList(matchedProducts);
     }
