@@ -769,58 +769,62 @@
             if (!container) return;
 
             let html = `
-                <div class="section-title">
-                    <button class="back-btn" onclick="renderHome()">
-                        <i class="fa-solid fa-arrow-left"></i> Kembali
-                    </button>
-                    Pilihan Produk
+                <div class="category-title">
+                    <i class="fa-solid fa-box-open"></i> Pilihan Produk
                 </div>
-                <div class="product-list" style="padding: 0 2px;">
+                <div class="product-list">
             `;
 
             if (!productsToRender || productsToRender.length === 0) {
-                html += '<p class="text-center text-gray-500 py-4">Tidak ada produk ditemukan.</p>';
+                html += `<div style="text-align:center;padding:25px 10px;color:#78909c;">
+                    Produk tidak tersedia
+                </div>`;
             } else {
                 productsToRender.forEach(p => {
-                    let productName = p.product_name || p.name;
-                    if (!productName) return;
-
-                    let price = Number(p.price || p.selling_price || 0);
-                    let priceFormatted = new Intl.NumberFormat("id-ID", {
-                        style: "currency",
-                        currency: "IDR",
-                        maximumFractionDigits: 0
-                    }).format(price);
-
-                    const sku = p.buyer_sku_code || p.sku || "";
+                    const name = p.product_name || p.name || "Produk Tanpa Nama";
+                    const price = Number(p.price || p.selling_price || 0);
+                    const sku = String(p.buyer_sku_code || p.sku || "").replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+                    const safeName = String(name).replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+                    const harga = new Intl.NumberFormat("id-ID").format(price);
 
                     html += `
-                        <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center mb-2">
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm">${productName}</h4>
-                                <p class="text-xs text-green-600 font-semibold">${priceFormatted}</p>
+                        <div class="product-card"
+                             onclick="handleProductClick('${sku}', '${safeName}', ${price}, false)">
+                            <div class="brand-card-info">
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                                <div style="display:flex;flex-direction:column;gap:3px;text-align:left;">
+                                    <span style="font-size:0.85rem;font-weight:700;">${name}</span>
+                                    <span style="font-size:0.72rem;color:#78909c;">Otomatis 24 Jam</span>
+                                </div>
                             </div>
-                            <button onclick="handleProductClick('${sku}', '${productName.replace(/'/g, "\\'")}', ${price}, false)"
-                                class="bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium active:bg-green-700">
-                                Beli
-                            </button>
-                        </div>
-                    `;
+                            <div style="text-align:right;flex-shrink:0;margin-left:8px;">
+                                <div style="color:var(--brand-accent);font-weight:800;font-size:0.95rem;white-space:nowrap;">
+                                    Rp ${harga}
+                                </div>
+                                <div style="font-size:0.68rem;color:#78909c;margin-top:4px;">
+                                    Beli <i class="fa-solid fa-chevron-right"></i>
+                                </div>
+                            </div>
+                        </div>`;
                 });
             }
 
-            html += '</div>';
+            html += `</div>`;
             container.innerHTML = html;
         }
 
-        function validateAndRenderProducts(inputVal, categoryName, placeholderText, isPostpaidCategory) {
-            if (typeof handleBrandClick === "function") {
-                handleBrandClick(categoryName, placeholderText, isPostpaidCategory);
+        function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName, fromHistory = false) {
+            const isBrandList = !!(brandDatabase && brandDatabase[brandName]);
+
+            if (!fromHistory) {
+                history.pushState({
+                    view: isBrandList ? "brands" : "products",
+                    brandName: brandName,
+                    placeholderText: placeholderText,
+                    isPostpaidCategory: isPostpaidCategory,
+                    categoryName: categoryName
+                }, "", location.href);
             }
-        }
-
-
-        function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName) {
     // Jika yang diklik adalah kategori utama (misal: Pulsa, Data, Games) dan memiliki sub-brand di brandDatabase
     if (brandDatabase && brandDatabase[brandName]) {
         const headerContainer = document.getElementById("homeHeaderContainer");
@@ -999,6 +1003,23 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
                 renderHome();
             }, 600);
         }
+
+        window.addEventListener("popstate", function(event) {
+            const state = event.state;
+
+            if (!state || state.view === "home") {
+                renderHome();
+                return;
+            }
+
+            handleBrandClick(
+                state.brandName,
+                state.placeholderText,
+                state.isPostpaidCategory,
+                state.categoryName,
+                true
+            );
+        });
 
         document.addEventListener('DOMContentLoaded', async () => {
             await loadProductsJson();
