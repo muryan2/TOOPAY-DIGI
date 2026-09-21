@@ -810,7 +810,7 @@
         
         window.brandDatabase[brandName].forEach(b => {
             html += `
-                <div class="service-box" onclick="window.location.href='produk.html?brand=' + encodeURIComponent(b.name) + '\&category=' + encodeURIComponent(brandName)">
+                <div class="service-box" onclick="handleBrandClick('${b.name}', '${placeholderText}', ${isPostpaidCategory}, '${brandName}')">
                     <i class="fa-solid ${b.icon || 'fa-sim-card'}"></i>
                     <span>${b.name}</span>
                 </div>
@@ -975,107 +975,5 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
             renderHome();
         });
     </script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Jika pembeli kembali dari halaman produk.html setelah memilih nominal
-    if (window.location.search.includes("status=selected")) {
-        const namaItem = localStorage.getItem("item_terpilih_nama");
-        const hargaItem = localStorage.getItem("item_terpilih_harga");
-        
-        const targetNama = document.getElementById("nama-produk-terpilih") || document.querySelector(".box-konfirmasi p span");
-        const targetHarga = document.getElementById("total-tagihan");
-
-        if (namaItem && targetNama) targetNama.innerText = namaItem;
-        if (hargaItem && targetHarga) targetHarga.innerText = hargaItem;
-        
-        // Layar otomatis meluncur ke bawah menuju form konfirmasi pesanan Anda
-        const formBawah = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
-        if (formBawah) formBawah.scrollIntoView({ behavior: 'smooth' });
-    }
-});
-</script>
 </body>
-
-</html>
-
-<script>
-// Sinkronisasi data products.json statis di GitHub Pages Anda
-document.addEventListener("DOMContentLoaded", function() {
-    if (typeof loadProductsJson === "function") {
-        loadProductsJson();
-    }
-    
-    // SISTEM INTERSEPTOR: Memantau kapan pun brand operator diklik oleh pembeli
-    setInterval(() => {
-        const kartuBrand = document.querySelectorAll(".brand-card");
-        kartuBrand.forEach(card => {
-            if (!card.hasAttribute("data-hooked")) {
-                card.setAttribute("data-hooked", "true");
-                
-                card.addEventListener("click", function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Deteksi nama brand (operator) dan nama kategori induk dari halaman Anda
-                    const namaBrand = card.innerText.trim();
-                    const subHeader = document.querySelector(".section-title") || document.querySelector(".sub-header");
-                    const kategoriAktif = subHeader ? subHeader.innerText.trim() : "Pulsa";
-                    
-                    prosesTampilNominalDigiflazz(namaBrand, kategoriAktif);
-                }, true);
-            }
-        });
-    }, 400);
-});
-
-// Fungsi mandiri untuk menyaring data globalProductsJson asli bawaan template Anda
-function prosesTampilNominalDigiflazz(brandName, categoryName) {
-    const container = document.getElementById("appRoot");
-    if (!container || !window.globalProductsJson) return;
-
-    // Saring produk paket pilihan dari database Digiflazz
-    const hasilSaring = window.globalProductsJson.filter(p => {
-        const bMatch = (p.brand || "").toLowerCase() === brandName.toLowerCase();
-        const katJson = (p.category || "").toLowerCase().replace(/[^a-z0-9]/g, '');
-        const katMenu = categoryName.toLowerCase().replace(/[^a-z0-9]/g, '');
-        return bMatch && (katJson.includes(katMenu) || katMenu.includes(katJson));
-    });
-
-    // Urutkan nominal harga dari termurah
-    hasilSaring.sort((a, b) => a.price - b.price);
-
-    // Ganti area halaman utama menjadi tempat list nominal produk paket pilihan
-    let htmlLayanan = `<div class="section-title"><button class="back-btn" onclick="renderHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${brandName}</div>`;
-    htmlLayanan += `<div id="productListContainer" class="product-list"></div>`;
-    container.innerHTML = htmlLayanan;
-
-    // Cetak daftar nominal menggunakan fungsi renderProductList asli template Anda
-    if (typeof renderProductList === "function") {
-        renderProductList(hasilSaring);
-    }
-}
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Jika pembeli kembali dari halaman produk.html setelah memilih nominal
-    if (window.location.search.includes("status=selected")) {
-        const namaItem = localStorage.getItem("item_terpilih_nama");
-        const hargaItem = localStorage.getItem("item_terpilih_harga");
-        
-        const targetNama = document.getElementById("nama-produk-terpilih") || document.querySelector(".box-konfirmasi p span");
-        const targetHarga = document.getElementById("total-tagihan");
-
-        if (namaItem && targetNama) targetNama.innerText = namaItem;
-        if (hargaItem && targetHarga) targetHarga.innerText = hargaItem;
-        
-        // Layar otomatis meluncur ke bawah menuju form konfirmasi pesanan Anda
-        const formBawah = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
-        if (formBawah) formBawah.scrollIntoView({ behavior: 'smooth' });
-    }
-});
-</script>
-</body>
-
 </html>
