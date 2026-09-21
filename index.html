@@ -810,7 +810,7 @@
         
         window.brandDatabase[brandName].forEach(b => {
             html += `
-                <div class="service-box" onclick="handleBrandClick('${b.name}', '${placeholderText}', ${isPostpaidCategory}, '${brandName}')">
+                <div class="service-box" onclick="window.location.href='produk.html?brand=' + encodeURIComponent(b.name) + '\&category=' + encodeURIComponent(brandName)">
                     <i class="fa-solid ${b.icon || 'fa-sim-card'}"></i>
                     <span>${b.name}</span>
                 </div>
@@ -975,7 +975,28 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
             renderHome();
         });
     </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Jika pembeli kembali dari halaman produk.html setelah memilih nominal
+    if (window.location.search.includes("status=selected")) {
+        const namaItem = localStorage.getItem("item_terpilih_nama");
+        const hargaItem = localStorage.getItem("item_terpilih_harga");
+        
+        const targetNama = document.getElementById("nama-produk-terpilih") || document.querySelector(".box-konfirmasi p span");
+        const targetHarga = document.getElementById("total-tagihan");
+
+        if (namaItem && targetNama) targetNama.innerText = namaItem;
+        if (hargaItem && targetHarga) targetHarga.innerText = hargaItem;
+        
+        // Layar otomatis meluncur ke bawah menuju form konfirmasi pesanan Anda
+        const formBawah = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
+        if (formBawah) formBawah.scrollIntoView({ behavior: 'smooth' });
+    }
+});
+</script>
 </body>
+
 </html>
 
 <script>
@@ -1035,5 +1056,26 @@ function prosesTampilNominalDigiflazz(brandName, categoryName) {
     }
 }
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Jika pembeli kembali dari halaman produk.html setelah memilih nominal
+    if (window.location.search.includes("status=selected")) {
+        const namaItem = localStorage.getItem("item_terpilih_nama");
+        const hargaItem = localStorage.getItem("item_terpilih_harga");
+        
+        const targetNama = document.getElementById("nama-produk-terpilih") || document.querySelector(".box-konfirmasi p span");
+        const targetHarga = document.getElementById("total-tagihan");
+
+        if (namaItem && targetNama) targetNama.innerText = namaItem;
+        if (hargaItem && targetHarga) targetHarga.innerText = hargaItem;
+        
+        // Layar otomatis meluncur ke bawah menuju form konfirmasi pesanan Anda
+        const formBawah = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
+        if (formBawah) formBawah.scrollIntoView({ behavior: 'smooth' });
+    }
+});
+</script>
 </body>
+
 </html>
