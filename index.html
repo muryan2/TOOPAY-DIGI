@@ -978,26 +978,21 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
 </body>
 </html>
 
-    // ====== LOGIKA PENAMPIL PRODUK SEBELUM FORM KONFIRMASI ======
+    // ====== LOGIKA INTEGRASI PRODUK DIGIFLAZZ ======
     
-    // Fungsi ini otomatis dipanggil ketika brand (misal: TELKOMSEL / MOBILE LEGEND) selesai dipilih oleh pembeli
-    function tampilkanDaftarProdukDigiflazz(namaBrand, namaKategori) {
-        // Mencari kontainer bawaan dari template asli Anda (class .brand-list atau .product-list)
+    // Fungsi ini dipanggil untuk merender produk ketika brand (operator) dipilih
+    function tampilkanProdukLayanan(namaBrand, namaKategori) {
+        // Mencari kontainer utama tempat mencetak elemen (bawaan template Anda)
         const container = document.querySelector(".product-list") || document.querySelector(".brand-list") || document.getElementById("appContainer");
         if (!container) return;
 
-        // Bersihkan halaman lama untuk mencetak deretan nominal produk baru
-        container.innerHTML = "";
-        container.style.display = "flex";
-        container.style.flexDirection = "column";
-        container.style.gap = "10px";
-
+        // Pastikan database globalProductsJson dari products.json sudah terisi
         if (!globalProductsJson || globalProductsJson.length === 0) {
-            container.innerHTML = "<p style='text-align:center; color:#78909c; font-size:14px; padding:20px;'>Database produk kosong atau belum termuat. Silakan muat ulang halaman.</p>";
+            container.innerHTML = "<p style='text-align:center; padding:20px; font-size:14px; color:#78909c;'>Data produk sedang dimuat, harap tunggu sebentar...</p>";
             return;
         }
 
-        // Saring data berdasarkan brand (misal: TELKOMSEL) dan kategori (misal: Pulsa / Data / Games)
+        // Saring data berdasarkan brand dan kategori yang cocok secara fleksibel
         const hasilSaring = globalProductsJson.filter(p => {
             const brandCocok = (p.brand || "").toLowerCase() === namaBrand.toLowerCase();
             
@@ -1008,28 +1003,32 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
             return brandCocok && kategoriCocok;
         });
 
-        // Urutkan nominal harga dari yang termurah
+        // Urutkan nominal harga dari termurah
         hasilSaring.sort((a, b) => a.price - b.price);
 
+        // Bersihkan halaman dan cetak kartu produk
+        container.innerHTML = "";
+
         if (hasilSaring.length === 0) {
-            container.innerHTML = `<p style='text-align:center; color:#78909c; font-size:14px; padding:20px;'>Produk ${namaBrand} untuk layanan ini sedang tidak tersedia.</p>`;
+            container.innerHTML = `<p style='text-align:center; padding:20px; font-size:14px; color:#78909c;'>Produk ${namaBrand} untuk kategori ini tidak tersedia.</p>`;
             return;
         }
 
-        // Cetak daftar nominal menggunakan style .product-card asli bawaan CSS Anda
         hasilSaring.forEach(produk => {
+            const nama = produk.product_name || "Produk Tanpa Nama";
+            const harga = produk.price || 0;
+
             const kartu = document.createElement("div");
-            kartu.className = "product-card";
-            
-            // Saat nominal dipilih, otomatis isi kolom Konfirmasi Pesanan di bagian bawah
+            kartu.className = "product-card"; // Sesuai class visual CSS Anda
             kartu.onclick = function() {
+                // Masukkan nama produk dan harga ke bagian konfirmasi pesanan bawah Anda
                 const targetNama = document.getElementById("nama-produk-terpilih") || document.querySelector(".box-konfirmasi p span");
                 const targetHarga = document.getElementById("total-tagihan");
                 
-                if (targetNama) targetNama.innerText = produk.product_name;
-                if (targetHarga) targetHarga.innerText = "Rp " + produk.price.toLocaleString('id-ID');
+                if (targetNama) targetNama.innerText = nama;
+                if (targetHarga) targetHarga.innerText = "Rp " + harga.toLocaleString('id-ID');
                 
-                // Layar HP meluncur halus ke form konfirmasi pesanan di bawah
+                // Gulir layar otomatis ke bagian bawah
                 const formBawah = document.getElementById("section-konfirmasi") || document.querySelector(".box-konfirmasi");
                 if (formBawah) formBawah.scrollIntoView({ behavior: 'smooth' });
             };
@@ -1038,44 +1037,46 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
                 <div class="brand-card-info">
                     <i class="fa-solid fa-mobile-screen-button"></i>
                     <div style="display:flex; flex-direction:column; text-align:left; margin-left:10px;">
-                        <span style="font-size:14px; font-weight:bold;">${produk.product_name}</span>
+                        <span style="font-size:14px; font-weight:bold;">${nama}</span>
                         <span style="font-size:11px; color:#78909c;">Proses Instan 24 Jam</span>
                     </div>
                 </div>
-                <span style="color:var(--brand-accent, #2e7d32); font-weight:800; font-size:14px; white-space:nowrap;">Rp ${produk.price.toLocaleString('id-ID')}</span>
+                <span style="color:var(--brand-accent); font-weight:800; font-size:14px; white-space:nowrap;">Rp ${harga.toLocaleString('id-ID')}</span>
             `;
             container.appendChild(kartu);
         });
     }
 
-    // Interseptor pintar: menyambungkan fungsi render brand bawaan template Anda menuju fungsi penampil produk di atas
-    function sambungkanKeFungsiCetakProduk() {
-        // Melacak fungsi bawaan yang dijalankan saat brand operator diklik di template asli Anda
+    // Fungsi pembantu untuk memantau kapan brand-card dicetak oleh fungsi asli template Anda
+    function inisialisasiPenyambungOtomatis() {
         setInterval(() => {
             const kartuBrand = document.querySelectorAll(".brand-card");
             kartuBrand.forEach(card => {
                 if (!card.hasAttribute("data-hooked")) {
                     card.setAttribute("data-hooked", "true");
                     
-                    const namaBrand = card.innerText.trim();
-                    // Mendeteksi kategori induk (Pulsa / Data / Games) yang sedang aktif di layar pembeli
-                    const kategoriAktif = document.querySelector(".daftar-produk-title")?.innerText || "Pulsa";
+                    // Ambil nama brand dari element HTML (misal: "MOBILE LEGEND" atau "FREE FIRE")
+                    const namaBrand = card.querySelector("span") ? card.querySelector("span").innerText.trim() : card.innerText.trim();
                     
+                    // Cari elemen judul kategori aktif yang dicetak oleh fungsi bawaan template Anda
+                    const subHeader = document.querySelector(".sub-header span") || document.querySelector(".sub-header");
+                    const kategoriAktif = subHeader ? subHeader.innerText.trim() : "Pulsa";
+
+                    // Ganti fungsi click-nya secara aman tanpa merusak struktur navigasi halaman utama
                     card.onclick = function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        // Alihkan alur untuk mencetak list produk nominal Digiflazz Anda
-                        tampilkanDaftarProdukDigiflazz(namaBrand, kategoriAktif);
+                        tampilkanProdukLayanan(namaBrand, kategoriAktif);
                     };
                 }
             });
         }, 300);
     }
 
-    // Jalankan seluruh pemuatan fungsi saat dokumen selesai dimuat browser HP
+    // Jalankan pemuatan products.json bawaan commit awal Anda
     document.addEventListener("DOMContentLoaded", function() {
         loadProductsJson();
-        sambungkanKeFungsiCetakProduk();
+        inisialisasiPenyambungOtomatis();
     });
 </script>
 </body>
