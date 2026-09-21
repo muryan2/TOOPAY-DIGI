@@ -831,12 +831,13 @@
     }
 
             let matchedProducts = globalProductsJson.filter(p => {
+                if (!p) return false;
                 const bName = (brandName || "").toUpperCase();
                 const pBrand = (p.brand || "").toUpperCase();
                 const pName = (p.product_name || p.name || "").toUpperCase();
 
                 const matchBrand = (pBrand && pBrand.includes(bName)) || (pName && pName.includes(bName));
-                
+                if (!matchBrand) return false;
                 if (categoryName === "Pulsa") {
                     if (pName.includes("VOUCHER") || pName.includes("AKTIVASI") || pName.includes("PERDANA")) {
                         return false;
@@ -845,14 +846,14 @@
                 return true;
             });
 
-            // JURUS UTAMA: Cetak produk hasil saringan ke dalam layout asli Anda
-            const container = document.getElementById("appRoot");
-            if (container) {
-                let html = `<div class="section-title"><button class="back-btn" onclick="renderHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${brandName} - ${categoryName || 'Pilihan'}</div>`;
-                html += `<div id="productListContainer" class="product-list"></div>`;
-                container.innerHTML = html;
+            // Cetak produk ke kontainer bawaan template orisinal Anda
+            const containerLayanan = document.getElementById("appRoot");
+            if (containerLayanan) {
+                let htmlLayanan = `<div class="section-title"><button class="back-btn" onclick="renderHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${brandName} - ${categoryName || 'Pilihan'}</div>`;
+                htmlLayanan += `<div id="productListContainer" class="product-list"></div>`;
+                containerLayanan.innerHTML = htmlLayanan;
                 
-                // Jalankan fungsi render bawaan Anda secara estetik
+                // Panggil fungsi render bawaan asli template Anda
                 renderProductList(matchedProducts);
             }
             return;
