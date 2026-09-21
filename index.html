@@ -825,66 +825,96 @@
                     categoryName: categoryName
                 }, "", location.href);
             }
-    // Jika yang diklik adalah kategori utama (misal: Pulsa, Data, Games) dan memiliki sub-brand di brandDatabase
-    if (brandDatabase && brandDatabase[brandName]) {
-        const headerContainer = document.getElementById("homeHeaderContainer");
-        if (headerContainer) headerContainer.style.display = "none";
-        
-        const container = document.getElementById("appRoot");
-        if (!container) return;
 
-        let html = `<div class="section-title"><button class="back-btn" onclick="renderHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${brandName}</div>`;
-        html += `<div class="brand-grid">`;
-        
-        brandDatabase[brandName].forEach(b => {
-            html += `
-                <div class="service-box" onclick="handleBrandClick('${b.name}', '${placeholderText}', ${isPostpaidCategory}, '${brandName}')">
-                    <i class="fa-solid ${b.icon || 'fa-sim-card'}"></i>
-                    <span>${b.name}</span>
-                </div>
-            `;
-        });
-        html += `</div>`;
-        container.innerHTML = html;
-        return;
-    }
+            // ==========================================
+            // KATEGORI YANG MEMILIKI DAFTAR BRAND
+            // Contoh: Pulsa -> Telkomsel / Indosat / XL
+            // ==========================================
+            if (isBrandList) {
+                const headerContainer = document.getElementById("homeHeaderContainer");
+                if (headerContainer) headerContainer.style.display = "none";
 
-    // Jika yang diklik adalah brand spesifik (misal: TELKOMSEL, INDOSAT)
-    const headerContainer = document.getElementById("homeHeaderContainer");
-    if (headerContainer) headerContainer.style.display = "none";
+                const container = document.getElementById("appRoot");
+                if (!container) return;
 
-    if (!globalProductsJson || !Array.isArray(globalProductsJson)) {
-        console.error("globalProductsJson belum dimuat");
-        return;
-    }
+                let html = `
+                    <div class="section-title">
+                        <button class="back-btn" onclick="renderHome()">
+                            <i class="fa-solid fa-arrow-left"></i> Kembali
+                        </button>
+                        ${brandName}
+                    </div>
+                    <div class="brand-grid">
+                `;
 
-    let matchedProducts = globalProductsJson.filter(p => {
-        if (!p) return false;
-        const bName = (brandName || "").toUpperCase();
-        const pBrand = (p.brand || "").toUpperCase();
-        const pName = (p.product_name || p.name || "").toUpperCase();
-        
-        const matchBrand = (pBrand && pBrand.includes(bName)) || (pName && pName.includes(bName));
-        if (!matchBrand) return false;
-        
-        if (categoryName === "Pulsa") {
-            const pCategory = (p.category || "").toUpperCase();
+                brandDatabase[brandName].forEach(b => {
+                    html += `
+                        <div class="service-box"
+                             onclick="handleBrandClick('${b.name}', '${placeholderText}', ${isPostpaidCategory}, '${brandName}')">
+                            <i class="fa-solid ${b.icon || 'fa-sim-card'}"></i>
+                            <span>${b.name}</span>
+                        </div>
+                    `;
+                });
 
-            if (pCategory !== "PULSA") {
-                return false;
+                html += `</div>`;
+                container.innerHTML = html;
+                return;
             }
 
-            if (pName.includes("VOUCHER") || pName.includes("AKTIVASI") || pName.includes("PERDANA")) {
-                return false;
+            // ==========================================
+            // BRAND -> PRODUK
+            // ==========================================
+            const headerContainer = document.getElementById("homeHeaderContainer");
+            if (headerContainer) headerContainer.style.display = "none";
+
+            if (!Array.isArray(globalProductsJson)) {
+                console.error("globalProductsJson belum dimuat");
+                return;
+            }
+
+            const selectedBrand = String(brandName || "").trim().toUpperCase();
+            const selectedCategory = String(categoryName || "").trim().toUpperCase();
+
+            let matchedProducts = globalProductsJson.filter(p => {
+                if (!p) return false;
+
+                const productBrand = String(p.brand || "").trim().toUpperCase();
+                const productCategory = String(p.category || "").trim().toUpperCase();
+
+                // Brand HARUS cocok dengan field brand asli.
+                if (productBrand !== selectedBrand) {
+                    return false;
+                }
+
+                // Untuk Pulsa, kategori HARUS PULSA.
+                if (selectedCategory === "PULSA") {
+                    if (productCategory !== "PULSA") {
+                        return false;
+                    }
+
+                    // Hanya produk yang aktif dibeli oleh buyer.
+                    if (p.buyer_product_status !== true) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // Urutkan produk berdasarkan harga terendah.
+            matchedProducts.sort((a, b) => {
+                return Number(a.price || 0) - Number(b.price || 0);
+            });
+
+            console.log(
+                `[PRODUCT RESOLVER] ${categoryName} -> ${brandName}: ${matchedProducts.length} produk`
+            );
+
+            if (typeof renderProductList === "function") {
+                renderProductList(matchedProducts);
             }
         }
-        return true;
-    });
-
-    if (typeof renderProductList === "function") {
-        renderProductList(matchedProducts);
-    }
-}
 
 function filterBrands() {
             let input = document.getElementById('brandSearch').value.toLowerCase();
