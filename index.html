@@ -830,34 +830,23 @@
         return;
     }
 
-            let matchedProducts = globalProductsJson.filter(p => {
-                if (!p) return false;
-                const bName = (brandName || "").toUpperCase();
-                const pBrand = (p.brand || "").toUpperCase();
-                const pName = (p.product_name || p.name || "").toUpperCase();
-
-                const matchBrand = (pBrand && pBrand.includes(bName)) || (pName && pName.includes(bName));
-                if (!matchBrand) return false;
-                if (categoryName === "Pulsa") {
-                    if (pName.includes("VOUCHER") || pName.includes("AKTIVASI") || pName.includes("PERDANA")) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-
-            // Cetak produk ke kontainer bawaan template orisinal Anda
-            const containerLayanan = document.getElementById("appRoot");
-            if (containerLayanan) {
-                let htmlLayanan = `<div class="section-title"><button class="back-btn" onclick="renderHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${brandName} - ${categoryName || 'Pilihan'}</div>`;
-                htmlLayanan += `<div id="productListContainer" class="product-list"></div>`;
-                containerLayanan.innerHTML = htmlLayanan;
-                
-                // Panggil fungsi render bawaan asli template Anda
-                renderProductList(matchedProducts);
+    let matchedProducts = globalProductsJson.filter(p => {
+        if (!p) return false;
+        const bName = (brandName || "").toUpperCase();
+        const pBrand = (p.brand || "").toUpperCase();
+        const pName = (p.product_name || p.name || "").toUpperCase();
+        
+        const matchBrand = (pBrand && pBrand.includes(bName)) || (pName && pName.includes(bName));
+        if (!matchBrand) return false;
+        
+        if (categoryName === "Pulsa") {
+            if (pName.includes("VOUCHER") || pName.includes("AKTIVASI") || pName.includes("PERDANA")) {
+                return false;
             }
-            return;
         }
+        return true;
+    });
+
     if (typeof renderProductList === "function") {
         renderProductList(matchedProducts);
     }
@@ -986,5 +975,65 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
             renderHome();
         });
     </script>
+</body>
+</html>
+
+<script>
+// Sinkronisasi data products.json statis di GitHub Pages Anda
+document.addEventListener("DOMContentLoaded", function() {
+    if (typeof loadProductsJson === "function") {
+        loadProductsJson();
+    }
+    
+    // SISTEM INTERSEPTOR: Memantau kapan pun brand operator diklik oleh pembeli
+    setInterval(() => {
+        const kartuBrand = document.querySelectorAll(".brand-card");
+        kartuBrand.forEach(card => {
+            if (!card.hasAttribute("data-hooked")) {
+                card.setAttribute("data-hooked", "true");
+                
+                card.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Deteksi nama brand (operator) dan nama kategori induk dari halaman Anda
+                    const namaBrand = card.innerText.trim();
+                    const subHeader = document.querySelector(".section-title") || document.querySelector(".sub-header");
+                    const kategoriAktif = subHeader ? subHeader.innerText.trim() : "Pulsa";
+                    
+                    prosesTampilNominalDigiflazz(namaBrand, kategoriAktif);
+                }, true);
+            }
+        });
+    }, 400);
+});
+
+// Fungsi mandiri untuk menyaring data globalProductsJson asli bawaan template Anda
+function prosesTampilNominalDigiflazz(brandName, categoryName) {
+    const container = document.getElementById("appRoot");
+    if (!container || !window.globalProductsJson) return;
+
+    // Saring produk paket pilihan dari database Digiflazz
+    const hasilSaring = window.globalProductsJson.filter(p => {
+        const bMatch = (p.brand || "").toLowerCase() === brandName.toLowerCase();
+        const katJson = (p.category || "").toLowerCase().replace(/[^a-z0-9]/g, '');
+        const katMenu = categoryName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return bMatch && (katJson.includes(katMenu) || katMenu.includes(katJson));
+    });
+
+    // Urutkan nominal harga dari termurah
+    hasilSaring.sort((a, b) => a.price - b.price);
+
+    // Ganti area halaman utama menjadi tempat list nominal produk paket pilihan
+    let htmlLayanan = `<div class="section-title"><button class="back-btn" onclick="renderHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button> ${brandName}</div>`;
+    htmlLayanan += `<div id="productListContainer" class="product-list"></div>`;
+    container.innerHTML = htmlLayanan;
+
+    // Cetak daftar nominal menggunakan fungsi renderProductList asli template Anda
+    if (typeof renderProductList === "function") {
+        renderProductList(hasilSaring);
+    }
+}
+</script>
 </body>
 </html>
