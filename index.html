@@ -704,7 +704,8 @@
                 { name: "XL", icon: "fa-sim-card" },
                 { name: "AXIS", icon: "fa-sim-card" },
                 { name: "TRI", icon: "fa-sim-card" },
-                { name: "SMARTFREN", icon: "fa-sim-card" }
+                { name: "SMARTFREN", icon: "fa-sim-card" },
+                { name: "by.U", icon: "fa-sim-card" }
             ]
         };
 
@@ -772,6 +773,21 @@
                 <div class="category-title">
                     <i class="fa-solid fa-box-open"></i> Pilihan Produk
                 </div>
+
+                <div class="form-group" style="margin: 12px 0 15px;">
+                    <label for="targetInput" style="display:block;font-size:0.8rem;font-weight:700;margin-bottom:6px;">
+                        Nomor Tujuan / ID Pelanggan
+                    </label>
+                    <input
+                        type="tel"
+                        id="targetInput"
+                        placeholder="Nomor HP (Contoh: 08123456789)"
+                        autocomplete="off"
+                        inputmode="numeric"
+                        style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border-clr);border-radius:8px;font-size:0.9rem;"
+                    >
+                </div>
+
                 <div class="product-list">
             `;
 
@@ -813,23 +829,20 @@
             container.innerHTML = html;
         }
 
-        function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName, fromHistory = false) {
+        function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName, typeName = "", fromHistory = false) {
             const isBrandList = !!(brandDatabase && brandDatabase[brandName]);
 
             if (!fromHistory) {
                 history.pushState({
-                    view: isBrandList ? "brands" : "products",
+                    view: isBrandList ? "brands" : (typeName ? "products" : "types"),
                     brandName: brandName,
                     placeholderText: placeholderText,
                     isPostpaidCategory: isPostpaidCategory,
-                    categoryName: categoryName
+                    categoryName: categoryName,
+                    typeName: typeName
                 }, "", location.href);
             }
 
-            // ==========================================
-            // KATEGORI YANG MEMILIKI DAFTAR BRAND
-            // Contoh: Pulsa -> Telkomsel / Indosat / XL
-            // ==========================================
             if (isBrandList) {
                 const headerContainer = document.getElementById("homeHeaderContainer");
                 if (headerContainer) headerContainer.style.display = "none";
@@ -850,7 +863,7 @@
                 brandDatabase[brandName].forEach(b => {
                     html += `
                         <div class="service-box"
-                             onclick="handleBrandClick('${b.name}', '${placeholderText}', ${isPostpaidCategory}, '${brandName}')">
+                             onclick="handleBrandClick('${String(b.name).replace(/'/g, "\\'")}', '${String(placeholderText).replace(/'/g, "\\'")}', ${isPostpaidCategory}, '${String(brandName).replace(/'/g, "\\'")}')">
                             <i class="fa-solid ${b.icon || 'fa-sim-card'}"></i>
                             <span>${b.name}</span>
                         </div>
@@ -862,9 +875,6 @@
                 return;
             }
 
-            // ==========================================
-            // BRAND -> PRODUK
-            // ==========================================
             const headerContainer = document.getElementById("homeHeaderContainer");
             if (headerContainer) headerContainer.style.display = "none";
 
@@ -875,40 +885,94 @@
 
             const selectedBrand = String(brandName || "").trim().toUpperCase();
             const selectedCategory = String(categoryName || "").trim().toUpperCase();
+            const selectedType = String(typeName || "").trim();
 
-            let matchedProducts = globalProductsJson.filter(p => {
+            let brandProducts = globalProductsJson.filter(p => {
                 if (!p) return false;
 
                 const productBrand = String(p.brand || "").trim().toUpperCase();
                 const productCategory = String(p.category || "").trim().toUpperCase();
 
-                // Brand HARUS cocok dengan field brand asli.
-                if (productBrand !== selectedBrand) {
-                    return false;
-                }
+                if (productBrand !== selectedBrand) return false;
 
-                // Untuk Pulsa, kategori HARUS PULSA.
                 if (selectedCategory === "PULSA") {
-                    if (productCategory !== "PULSA") {
-                        return false;
-                    }
-
-                    // Hanya produk yang aktif dibeli oleh buyer.
-                    if (p.buyer_product_status !== true) {
-                        return false;
-                    }
+                    if (productCategory !== "PULSA") return false;
+                    if (p.buyer_product_status !== true) return false;
                 }
 
                 return true;
             });
 
-            // Urutkan produk berdasarkan harga terendah.
+            if (!selectedType) {
+                const typeCounts = {};
+
+                brandProducts.forEach(p => {
+                    const type = String(p.type || "").trim() || "(Tanpa Tipe)";
+                    typeCounts[type] = (typeCounts[type] || 0) + 1;
+                });
+
+                const types = Object.keys(typeCounts);
+
+                if (types.length > 1) {
+                    const container = document.getElementById("appRoot");
+                    if (!container) return;
+
+                    let html = `
+                        <div class="section-title">
+                            <button class="back-btn" onclick="history.back()">
+                                <i class="fa-solid fa-arrow-left"></i> Kembali
+                            </button>
+                            ${brandName}
+                        </div>
+                        <div class="brand-grid">
+                    `;
+
+                    types.sort((a, b) => a.localeCompare(b, "id-ID"));
+
+                    types.forEach(type => {
+                        html += `
+                            <div class="service-box"
+                                 onclick="handleBrandClick('${String(brandName).replace(/'/g, "\\'")}', '${String(placeholderText).replace(/'/g, "\\'")}', ${isPostpaidCategory}, '${String(categoryName).replace(/'/g, "\\'")}', '${String(type).replace(/'/g, "\\'")}')">
+                                <i class="fa-solid fa-layer-group"></i>
+                                <span>${type}</span>
+                                <small style="font-size:0.65rem;color:#78909c;margin-top:4px;">${typeCounts[type]} produk</small>
+                            </div>
+                        `;
+                    });
+
+                    html += `</div>`;
+                    container.innerHTML = html;
+                    return;
+                }
+
+                if (types.length === 1) {
+                    typeName = types[0];
+                }
+            }
+
+            let matchedProducts = brandProducts;
+
+            if (typeName) {
+                const exactType = String(typeName).trim();
+
+                matchedProducts = brandProducts.filter(p => {
+                    const productType = String(p.type || "").trim() || "(Tanpa Tipe)";
+                    return productType === exactType;
+                });
+            }
+
             matchedProducts.sort((a, b) => {
-                return Number(a.price || 0) - Number(b.price || 0);
+                const getNominal = (p) => {
+                    const match = String(p.product_name || "").match(/[0-9][0-9.]*/);
+                    return parseInt((match ? match[0] : "0").replace(/\./g, ""), 10);
+                };
+                return getNominal(a) - getNominal(b);
             });
 
             console.log(
-                `[PRODUCT RESOLVER] ${categoryName} -> ${brandName}: ${matchedProducts.length} produk`
+                `[PRODUCT RESOLVER] ${categoryName} -> ${brandName}` +
+                (typeName ? ` -> ${typeName}` : "") +
+                `: ${matchedProducts.length} produk`
             );
 
             if (typeof renderProductList === "function") {
@@ -1047,6 +1111,7 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
                 state.placeholderText,
                 state.isPostpaidCategory,
                 state.categoryName,
+                state.typeName || "",
                 true
             );
         });
