@@ -659,17 +659,17 @@
 
                         <div style="margin-top: 8px; font-size: 0.75rem; color: #607d8b;">
                             <i class="fa-solid fa-hand-pointer"></i>
-                            Tap gambar QRIS untuk membagikan ke aplikasi pembayaran
+                            👆 Tap QRIS untuk memilih aplikasi pembayaran
                         </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Nomor WhatsApp (Untuk Bukti Transaksi & Resi)</label>
+                <div class="form-group" id="whatsappCheckoutGroup" style="display: none;">
+                    <label>Nomor WhatsApp</label>
                     <input type="tel" id="whatsappInput" placeholder="Contoh: 08123456789" autocomplete="off">
                 </div>
 
-                <button type="button" class="btn-submit" id="modalSubmitBtn" onclick="processAction()">Lanjutkan Pembayaran</button>
+                <button type="button" class="btn-submit" id="modalSubmitBtn" onclick="processAction()" style="display: none;">Lanjutkan Pembayaran</button>
             </div>
         </div>
     </div>
@@ -1822,11 +1822,6 @@ function openCheckoutModal(
             'qrisSection'
         ).style.display = 'block';
 
-        document.getElementById(
-            'modalSubmitBtn'
-        ).innerText =
-            "Konfirmasi Pembayaran";
-
     } else {
         document.getElementById(
             'postpaidDetails'
@@ -1835,11 +1830,6 @@ function openCheckoutModal(
         document.getElementById(
             'qrisSection'
         ).style.display = 'block';
-
-        document.getElementById(
-            'modalSubmitBtn'
-        ).innerText =
-            "Bayar Sekarang";
     }
 
     // Reset tampilan QRIS untuk transaksi baru
@@ -1868,14 +1858,13 @@ function openCheckoutModal(
         'actionModal'
     ).classList.add('active');
 
+    /*
+     * QRIS sekarang dibuat otomatis setelah checkout dibuka.
+     * Pembeli tidak perlu menekan tombol lain untuk membuat QRIS.
+     */
     setTimeout(() => {
-        const input =
-            document.getElementById('whatsappInput');
-
-        if (input) {
-            input.focus();
-        }
-    }, 150);
+        processAction();
+    }, 50);
 }
 
         function closeModalDirect() {
@@ -1919,51 +1908,101 @@ function openCheckoutModal(
             return true;
         }
         async function shareQRIS() {
-            const img = document.getElementById('qrisImageTarget');
+    const img = document.getElementById("qrisImageTarget");
 
-            if (!img || !img.src) {
-                alert("QRIS belum tersedia.");
+    if (!img || !img.src) {
+        alert("QRIS belum siap.");
+        return;
+    }
+
+    try {
+        /*
+         * Prioritas utama:
+         * gunakan Android Web Share supaya pengguna mendapatkan
+         * pilihan aplikasi yang tersedia di perangkat.
+         */
+        if (navigator.share) {
+            const response = await fetch(img.src);
+            const blob = await response.blob();
+
+            const file = new File(
+                [blob],
+                "QRIS-TOOPAY-DIGI.png",
+                { type: blob.type || "image/png" }
+            );
+
+            if (
+                navigator.canShare &&
+                navigator.canShare({ files: [file] })
+            ) {
+                await navigator.share({
+                    title: "QRIS TooPay Digi",
+                    text: "Tap QRIS untuk melakukan pembayaran.",
+                    files: [file]
+                });
                 return;
             }
 
-            try {
-                const response = await fetch(img.src);
-                const blob = await response.blob();
+            /*
+             * Browser mendukung share teks/URL tetapi tidak file.
+             * Jangan otomatis download QRIS karena itu mengubah
+             * perilaku Tap QRIS yang diharapkan pengguna.
+             */
+            await navigator.share({
+                title: "QRIS TooPay Digi",
+                text: "Silakan buka QRIS TooPay Digi untuk melakukan pembayaran."
+            });
 
-                const file = new File(
-                    [blob],
-                    'QRIS-TOOPAY-DIGI.png',
-                    { type: 'image/png' }
-                );
-
-                if (
-                    navigator.share &&
-                    navigator.canShare &&
-                    navigator.canShare({ files: [file] })
-                ) {
-                    await navigator.share({
-                        title: 'QRIS TOOPAY-DIGI',
-                        text: 'Silakan lakukan pembayaran melalui QRIS TOOPAY-DIGI.',
-                        files: [file]
-                    });
-                } else {
-                    const link = document.createElement('a');
-
-                    link.href = img.src;
-                    link.download = 'QRIS-TOOPAY-DIGI.png';
-                    link.click();
-
-                    alert("Browser tidak mendukung share langsung. QRIS disimpan sebagai gambar.");
-                }
-
-            } catch (error) {
-                console.error("Gagal share QRIS:", error);
-                alert("QRIS tidak dapat dibagikan.");
-            }
+            return;
         }
+
+        /*
+         * Browser benar-benar tidak menyediakan Web Share.
+         * QRIS tetap dipertahankan di layar, tanpa download otomatis.
+         */
+        alert(
+            "Browser ini tidak mendukung menu berbagi QRIS.\n\n" +
+            "Gunakan Chrome/Browser Android yang mendukung Share untuk " +
+            "membuka pilihan aplikasi pembayaran."
+        );
+
+    } catch (err) {
+        /*
+         * AbortError berarti pengguna menutup menu Share.
+         * Tidak perlu menampilkan error.
+         */
+        if (err && err.name === "AbortError") {
+            return;
+        }
+
+        console.error("Share QRIS gagal:", err);
+
+        alert(
+            "Menu berbagi QRIS tidak dapat dibuka di browser ini."
+        );
+    }
+}
 
         // Fungsi transaksi Client-Side untuk GitHub Pages
 async function processAction() {
+    if (
+        activeTransactionData &&
+        activeTransactionData.orderId
+    ) {
+        return;
+    }
+
+    if (
+        activeTransactionData &&
+        activeTransactionData.qrisCreating
+    ) {
+        return;
+    }
+
+    if (activeTransactionData) {
+        activeTransactionData.qrisCreating = true;
+    }
+
     const whatsappInput = document.getElementById('whatsappInput');
     const whatsapp = whatsappInput
         ? whatsappInput.value.trim()
@@ -2131,6 +2170,10 @@ async function processAction() {
             "\n\n" +
             "Pastikan server backend Termux sedang berjalan."
         );
+
+        if (activeTransactionData) {
+            activeTransactionData.qrisCreating = false;
+        }
 
         submitBtn.innerText =
             originalText;
