@@ -1,0 +1,15 @@
+.env
+node_modules/
+orders.json
+pasca.json
+
+*.backup*
+*.bak*
+backup-*
+test-*
+temp_check.js
+toopay-js-check.js
+ngrok*
+node
+
+.DS_Store

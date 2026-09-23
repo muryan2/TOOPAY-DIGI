@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TooPay Digi - PPOB Mandiri</title>
-    
+
     <!-- Konfigurasi PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1b5e20">
@@ -12,10 +12,10 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Library QR Code Lokal untuk QRIS Dinamis -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
+
     <style>
         :root {
             --brand-primary: #1b5e20;      /* Hijau Tua Tegas */
@@ -33,7 +33,7 @@
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
             color: var(--text-clr);
         }
-        
+
         .app-container {
             max-width: 480px;
             margin: 0 auto;
@@ -511,6 +511,7 @@
     </style>
 
 <script>
+        const PROFIT_MARGIN = 0;
     // Force unregister old service workers and clear cache to fix white/blank screen
     if ("serviceWorker" in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -547,7 +548,7 @@
 <body>
 
     <div class="app-container" id="appContainer">
-        
+
         <div id="homeHeaderContainer">
             <div class="app-header">
                 <div class="header-top">
@@ -616,7 +617,7 @@
                 <h3 id="modalTitle">Konfirmasi Pesanan</h3>
                 <button class="close-btn" onclick="closeModalDirect()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            
+
             <div id="modalBodyContent">
                 <div class="form-group" style="background: var(--brand-light); padding: 10px; border-radius: 8px; margin-bottom: 12px;">
                     <div style="font-size: 0.75rem; color: var(--brand-primary); font-weight: 700;" id="summaryLabel">PRODUK DIPILIH:</div>
@@ -630,9 +631,22 @@
                 </div>
 
                 <div id="qrisSection" style="display: none; text-align: center; margin-bottom: 15px;">
-                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--brand-primary); margin-bottom: 8px;">SCAN QRIS UNTUK PEMBAYARAN</div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--brand-primary); margin-bottom: 8px;">PEMBAYARAN QRIS</div>
+<div style="font-size: 0.85rem; color: #555; margin-bottom: 10px;">
+    Bagikan QRIS ke eWallet atau M-Banking Anda untuk melanjutkan pembayaran.
+</div>
                     <div style="background: #fff; padding: 10px; display: inline-block; border: 1px solid var(--border-clr); border-radius: 8px;">
                         <div id="qrcodeTarget"></div>
+                    </div>
+
+                    <div style="margin-top: 10px;">
+                        <button type="button"
+                                id="shareQrisBtn"
+                                onclick="shareQRIS()"
+                                style="border: 0; border-radius: 8px; padding: 10px 16px; font-weight: 700; cursor: pointer; background: var(--brand-primary); color: #fff;">
+                            <i class="fa-solid fa-share-nodes"></i>
+                            Bagikan QRIS Untuk Bayar
+                        </button>
                     </div>
                 </div>
 
@@ -717,7 +731,7 @@
             if (slides.length === 0) return;
             slides.forEach(s => s.classList.remove('active'));
             dots.forEach(d => d.classList.remove('active'));
-            
+
             slideIndex = (index + slides.length) % slides.length;
             slides[slideIndex].classList.add('active');
             dots[slideIndex].classList.add('active');
@@ -763,9 +777,9 @@
             container.innerHTML = htmlContent;
         }
 
-        
-        
-        function renderProductList(productsToRender) {
+
+
+        function renderProductList(productsToRender, isPostpaid = false) {
             const container = document.getElementById("appRoot");
             if (!container) return;
 
@@ -778,10 +792,11 @@
                     <label for="targetInput" style="display:block;font-size:0.8rem;font-weight:700;margin-bottom:6px;">
                         Nomor Tujuan / ID Pelanggan
                     </label>
+
                     <input
                         type="tel"
                         id="targetInput"
-                        placeholder="Nomor HP (Contoh: 08123456789)"
+                        placeholder="${isPostpaid ? 'Nomor / ID Pelanggan' : 'Nomor HP (Contoh: 08123456789)'}"
                         autocomplete="off"
                         inputmode="numeric"
                         style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border-clr);border-radius:8px;font-size:0.9rem;"
@@ -792,36 +807,66 @@
             `;
 
             if (!productsToRender || productsToRender.length === 0) {
-                html += `<div style="text-align:center;padding:25px 10px;color:#78909c;">
-                    Produk tidak tersedia
-                </div>`;
+                html += `
+                    <div style="text-align:center;padding:25px 10px;color:#78909c;">
+                        Produk tidak tersedia
+                    </div>
+                `;
             } else {
                 productsToRender.forEach(p => {
                     const name = p.product_name || p.name || "Produk Tanpa Nama";
-                    const price = Number(p.price || p.selling_price || 0);
-                    const sku = String(p.buyer_sku_code || p.sku || "").replace(/\\/g,"\\\\").replace(/'/g,"\\'");
-                    const safeName = String(name).replace(/\\/g,"\\\\").replace(/'/g,"\\'");
-                    const harga = new Intl.NumberFormat("id-ID").format(price);
+
+                    const price = Number(
+                        p.price ??
+                        p.selling_price ??
+                        0
+                    );
+
+                    const sku = String(
+                        p.buyer_sku_code || p.sku || ""
+                    )
+                    .replace(/\\/g,"\\\\")
+                    .replace(/'/g,"\\'");
+
+                    const safeName = String(name)
+                        .replace(/\\/g,"\\\\")
+                        .replace(/'/g,"\\'");
+
+                    const harga = price > 0
+                        ? "Rp " + new Intl.NumberFormat("id-ID").format(price)
+                        : (isPostpaid ? "Cek Tagihan" : "Harga tidak tersedia");
 
                     html += `
                         <div class="product-card"
-                             onclick="handleProductClick('${sku}', '${safeName}', ${price}, false)">
+                             onclick="handleProductClick('${sku}', '${safeName}', ${price}, ${isPostpaid})">
+
                             <div class="brand-card-info">
-                                <i class="fa-solid fa-mobile-screen-button"></i>
+                                <i class="fa-solid ${isPostpaid ? 'fa-file-invoice' : 'fa-mobile-screen-button'}"></i>
+
                                 <div style="display:flex;flex-direction:column;gap:3px;text-align:left;">
-                                    <span style="font-size:0.85rem;font-weight:700;">${name}</span>
-                                    <span style="font-size:0.72rem;color:#78909c;">Otomatis 24 Jam</span>
+                                    <span style="font-size:0.85rem;font-weight:700;">
+                                        ${name}
+                                    </span>
+
+                                    <span style="font-size:0.72rem;color:#78909c;">
+                                        ${isPostpaid ? 'Inquiry tagihan diperlukan' : 'Otomatis 24 Jam'}
+                                    </span>
                                 </div>
                             </div>
+
                             <div style="text-align:right;flex-shrink:0;margin-left:8px;">
                                 <div style="color:var(--brand-accent);font-weight:800;font-size:0.95rem;white-space:nowrap;">
-                                    Rp ${harga}
+                                    ${harga}
                                 </div>
+
                                 <div style="font-size:0.68rem;color:#78909c;margin-top:4px;">
-                                    Beli <i class="fa-solid fa-chevron-right"></i>
+                                    ${isPostpaid ? 'Cek' : 'Beli'}
+                                    <i class="fa-solid fa-chevron-right"></i>
                                 </div>
                             </div>
-                        </div>`;
+
+                        </div>
+                    `;
                 });
             }
 
@@ -829,12 +874,22 @@
             container.innerHTML = html;
         }
 
-        function handleBrandClick(brandName, placeholderText, isPostpaidCategory, categoryName, typeName = "", fromHistory = false) {
+async function handleBrandClick(
+            brandName,
+            placeholderText,
+            isPostpaidCategory,
+            categoryName,
+            typeName = "",
+            fromHistory = false
+        ) {
             const isBrandList = !!(brandDatabase && brandDatabase[brandName]);
 
             if (!fromHistory) {
                 history.pushState({
-                    view: isBrandList ? "brands" : (typeName ? "products" : "types"),
+                    view: isBrandList
+                        ? "brands"
+                        : (typeName ? "products" : "types"),
+
                     brandName: brandName,
                     placeholderText: placeholderText,
                     isPostpaidCategory: isPostpaidCategory,
@@ -843,27 +898,278 @@
                 }, "", location.href);
             }
 
-            if (isBrandList) {
-                const headerContainer = document.getElementById("homeHeaderContainer");
-                if (headerContainer) headerContainer.style.display = "none";
+            /*
+             * =====================================================
+             * PASCABAYAR
+             * =====================================================
+             *
+             * Pascabayar tidak memakai products.json.
+             * Ambil dari backend cache /api/produk-pasca.
+             */
+            if (isPostpaidCategory) {
+                const headerContainer =
+                    document.getElementById("homeHeaderContainer");
 
-                const container = document.getElementById("appRoot");
+                if (headerContainer) {
+                    headerContainer.style.display = "none";
+                }
+
+                try {
+                    const response = await fetch(
+                        "http://" + "192.168.100.100:3000/api/produk-pasca"
+                    );
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(
+                            result.message ||
+                            "Katalog pascabayar belum tersedia."
+                        );
+                    }
+
+                    const pascaProducts = Array.isArray(result.data)
+                        ? result.data.filter(p =>
+                            p &&
+                            p.buyer_product_status === true &&
+                            p.seller_product_status === true
+                        )
+                        : [];
+
+                    if (!pascaProducts.length) {
+                        throw new Error(
+                            "Belum ada produk pascabayar aktif."
+                        );
+                    }
+
+                    /*
+                     * Normalisasi nama layanan:
+                     * "PLN Pascabayar" -> "PLN"
+                     * "HP Pascabayar"  -> "HP"
+                     */
+                    const selectedService = String(
+                        brandName || ""
+                    )
+                    .trim()
+                    .toUpperCase()
+                    .replace(/\s+PASCABAYAR$/i, "")
+                    .trim();
+
+                    const selectedBrand = selectedService;
+
+                    /*
+                     * Jika brand tepat ditemukan, tampilkan produknya.
+                     */
+                    let matchedProducts = pascaProducts.filter(p => {
+                        const productBrand = String(
+                            p.brand || ""
+                        )
+                        .trim()
+                        .toUpperCase();
+
+                        return productBrand === selectedBrand;
+                    });
+
+                    /*
+                     * Jika tidak ada brand tepat:
+                     *
+                     * Contoh HP Pascabayar bisa memiliki banyak
+                     * brand/operator. Maka tampilkan daftar brand
+                     * yang tersedia daripada membuat produk palsu.
+                     */
+                    if (!matchedProducts.length) {
+                        const brandMap = {};
+
+                        pascaProducts.forEach(p => {
+                            const brand = String(
+                                p.brand || ""
+                            ).trim();
+
+                            if (!brand) return;
+
+                            const key = brand.toUpperCase();
+
+                            if (!brandMap[key]) {
+                                brandMap[key] = {
+                                    name: brand,
+                                    count: 0
+                                };
+                            }
+
+                            brandMap[key].count++;
+                        });
+
+                        const brands = Object.values(brandMap)
+                            .sort((a, b) =>
+                                a.name.localeCompare(b.name, "id-ID")
+                            );
+
+                        const container =
+                            document.getElementById("appRoot");
+
+                        if (!container) return;
+
+                        let html = `
+                            <div class="section-title">
+                                <button class="back-btn"
+                                        onclick="renderHome()">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                    Kembali
+                                </button>
+
+                                ${brandName}
+                            </div>
+
+                            <div class="brand-grid">
+                        `;
+
+                        brands.forEach(b => {
+                            const safeBrand = String(b.name)
+                                .replace(/\\/g, "\\\\")
+                                .replace(/'/g, "\\'");
+
+                            const safePlaceholder =
+                                String(placeholderText || "")
+                                .replace(/\\/g, "\\\\")
+                                .replace(/'/g, "\\'");
+
+                            const safeCategory =
+                                String(categoryName || brandName)
+                                .replace(/\\/g, "\\\\")
+                                .replace(/'/g, "\\'");
+
+                            html += `
+                                <div class="service-box"
+                                     onclick="handleBrandClick(
+                                        '${safeBrand}',
+                                        '${safePlaceholder}',
+                                        true,
+                                        '${safeCategory}',
+                                        '',
+                                        false
+                                     )">
+
+                                    <i class="fa-solid fa-building"></i>
+                                    <span>${b.name}</span>
+
+                                    <small style="font-size:0.65rem;color:#78909c;margin-top:4px;">
+                                        ${b.count} produk
+                                    </small>
+                                </div>
+                            `;
+                        });
+
+                        html += `</div>`;
+                        container.innerHTML = html;
+                        return;
+                    }
+
+                    matchedProducts.sort((a, b) =>
+                        String(a.product_name || "")
+                            .localeCompare(
+                                String(b.product_name || ""),
+                                "id-ID",
+                                { numeric: true }
+                            )
+                    );
+
+                    console.log(
+                        `[POSTPAID RESOLVER] ${brandName}: ` +
+                        `${matchedProducts.length} produk`
+                    );
+
+                    renderProductList(
+                        matchedProducts,
+                        true
+                    );
+
+                    return;
+
+                } catch (error) {
+                    console.error(
+                        "Gagal memuat katalog pascabayar:",
+                        error
+                    );
+
+                    const container =
+                        document.getElementById("appRoot");
+
+                    if (container) {
+                        container.innerHTML = `
+                            <div style="padding:20px;text-align:center;">
+                                <div class="section-title">
+                                    <button class="back-btn"
+                                            onclick="renderHome()">
+                                        <i class="fa-solid fa-arrow-left"></i>
+                                        Kembali
+                                    </button>
+
+                                    ${brandName}
+                                </div>
+
+                                <div style="padding:30px 15px;color:#78909c;">
+                                    <i class="fa-solid fa-circle-exclamation"
+                                       style="font-size:30px;margin-bottom:12px;"></i>
+
+                                    <div style="font-weight:700;margin-bottom:8px;">
+                                        Katalog pascabayar belum tersedia
+                                    </div>
+
+                                    <div style="font-size:0.8rem;">
+                                        ${error.message}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    return;
+                }
+            }
+
+            /*
+             * =====================================================
+             * PREPAID
+             * =====================================================
+             * Bagian lama tetap dipakai.
+             */
+            if (isBrandList) {
+                const headerContainer =
+                    document.getElementById("homeHeaderContainer");
+
+                if (headerContainer) {
+                    headerContainer.style.display = "none";
+                }
+
+                const container =
+                    document.getElementById("appRoot");
+
                 if (!container) return;
 
                 let html = `
                     <div class="section-title">
-                        <button class="back-btn" onclick="renderHome()">
-                            <i class="fa-solid fa-arrow-left"></i> Kembali
+                        <button class="back-btn"
+                                onclick="renderHome()">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Kembali
                         </button>
+
                         ${brandName}
                     </div>
+
                     <div class="brand-grid">
                 `;
 
                 brandDatabase[brandName].forEach(b => {
                     html += `
                         <div class="service-box"
-                             onclick="handleBrandClick('${String(b.name).replace(/'/g, "\\'")}', '${String(placeholderText).replace(/'/g, "\\'")}', ${isPostpaidCategory}, '${String(brandName).replace(/'/g, "\\'")}')">
+                             onclick="handleBrandClick(
+                                '${String(b.name).replace(/'/g, "\\'")}',
+                                '${String(placeholderText).replace(/'/g, "\\'")}',
+                                ${isPostpaidCategory},
+                                '${String(brandName).replace(/'/g, "\\'")}'
+                             )">
+
                             <i class="fa-solid ${b.icon || 'fa-sim-card'}"></i>
                             <span>${b.name}</span>
                         </div>
@@ -875,67 +1181,120 @@
                 return;
             }
 
-            const headerContainer = document.getElementById("homeHeaderContainer");
-            if (headerContainer) headerContainer.style.display = "none";
+            const headerContainer =
+                document.getElementById("homeHeaderContainer");
+
+            if (headerContainer) {
+                headerContainer.style.display = "none";
+            }
 
             if (!Array.isArray(globalProductsJson)) {
-                console.error("globalProductsJson belum dimuat");
+                console.error(
+                    "globalProductsJson belum dimuat"
+                );
                 return;
             }
 
-            const selectedBrand = String(brandName || "").trim().toUpperCase();
-            const selectedCategory = String(categoryName || "").trim().toUpperCase();
-            const selectedType = String(typeName || "").trim();
+            const selectedBrand =
+                String(brandName || "")
+                .trim()
+                .toUpperCase();
 
-            let brandProducts = globalProductsJson.filter(p => {
-                if (!p) return false;
+            const selectedCategory =
+                String(categoryName || "")
+                .trim()
+                .toUpperCase();
 
-                const productBrand = String(p.brand || "").trim().toUpperCase();
-                const productCategory = String(p.category || "").trim().toUpperCase();
+            const selectedType =
+                String(typeName || "").trim();
 
-                if (productBrand !== selectedBrand) return false;
+            let brandProducts =
+                globalProductsJson.filter(p => {
+                    if (!p) return false;
 
-                if (selectedCategory === "PULSA") {
-                    if (productCategory !== "PULSA") return false;
-                    if (p.buyer_product_status !== true) return false;
-                }
+                    const productBrand =
+                        String(p.brand || "")
+                        .trim()
+                        .toUpperCase();
 
-                return true;
-            });
+                    const productCategory =
+                        String(p.category || "")
+                        .trim()
+                        .toUpperCase();
+
+                    if (productBrand !== selectedBrand) {
+                        return false;
+                    }
+
+                    if (selectedCategory === "PULSA") {
+                        if (productCategory !== "PULSA") {
+                            return false;
+                        }
+
+                        if (p.buyer_product_status !== true) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                });
 
             if (!selectedType) {
                 const typeCounts = {};
 
                 brandProducts.forEach(p => {
-                    const type = String(p.type || "").trim() || "(Tanpa Tipe)";
-                    typeCounts[type] = (typeCounts[type] || 0) + 1;
+                    const type =
+                        String(p.type || "").trim() ||
+                        "(Tanpa Tipe)";
+
+                    typeCounts[type] =
+                        (typeCounts[type] || 0) + 1;
                 });
 
                 const types = Object.keys(typeCounts);
 
                 if (types.length > 1) {
-                    const container = document.getElementById("appRoot");
+                    const container =
+                        document.getElementById("appRoot");
+
                     if (!container) return;
 
                     let html = `
                         <div class="section-title">
-                            <button class="back-btn" onclick="history.back()">
-                                <i class="fa-solid fa-arrow-left"></i> Kembali
+                            <button class="back-btn"
+                                    onclick="history.back()">
+                                <i class="fa-solid fa-arrow-left"></i>
+                                Kembali
                             </button>
+
                             ${brandName}
                         </div>
+
                         <div class="brand-grid">
                     `;
 
-                    types.sort((a, b) => a.localeCompare(b, "id-ID"));
+                    types.sort((a, b) =>
+                        a.localeCompare(b, "id-ID")
+                    );
 
                     types.forEach(type => {
                         html += `
                             <div class="service-box"
-                                 onclick="handleBrandClick('${String(brandName).replace(/'/g, "\\'")}', '${String(placeholderText).replace(/'/g, "\\'")}', ${isPostpaidCategory}, '${String(categoryName).replace(/'/g, "\\'")}', '${String(type).replace(/'/g, "\\'")}')">
+                                 onclick="handleBrandClick(
+                                    '${String(brandName).replace(/'/g, "\\'")}',
+                                    '${String(placeholderText).replace(/'/g, "\\'")}',
+                                    ${isPostpaidCategory},
+                                    '${String(categoryName).replace(/'/g, "\\'")}',
+                                    '${String(type).replace(/'/g, "\\'")}'
+                                 )">
+
                                 <i class="fa-solid fa-layer-group"></i>
+
                                 <span>${type}</span>
-                                <small style="font-size:0.65rem;color:#78909c;margin-top:4px;">${typeCounts[type]} produk</small>
+
+                                <small style="font-size:0.65rem;color:#78909c;margin-top:4px;">
+                                    ${typeCounts[type]} produk
+                                </small>
                             </div>
                         `;
                     });
@@ -953,19 +1312,32 @@
             let matchedProducts = brandProducts;
 
             if (typeName) {
-                const exactType = String(typeName).trim();
+                const exactType =
+                    String(typeName).trim();
 
-                matchedProducts = brandProducts.filter(p => {
-                    const productType = String(p.type || "").trim() || "(Tanpa Tipe)";
-                    return productType === exactType;
-                });
+                matchedProducts =
+                    brandProducts.filter(p => {
+                        const productType =
+                            String(p.type || "").trim() ||
+                            "(Tanpa Tipe)";
+
+                        return productType === exactType;
+                    });
             }
 
             matchedProducts.sort((a, b) => {
-                const getNominal = (p) => {
-                    const match = String(p.product_name || "").match(/[0-9][0-9.]*/);
-                    return parseInt((match ? match[0] : "0").replace(/\./g, ""), 10);
+                const getNominal = p => {
+                    const match =
+                        String(p.product_name || "")
+                        .match(/[0-9][0-9.]*/);
+
+                    return parseInt(
+                        (match ? match[0] : "0")
+                        .replace(/\./g, ""),
+                        10
+                    );
                 };
+
                 return getNominal(a) - getNominal(b);
             });
 
@@ -976,7 +1348,10 @@
             );
 
             if (typeof renderProductList === "function") {
-                renderProductList(matchedProducts);
+                renderProductList(
+                    matchedProducts,
+                    false
+                );
             }
         }
 
@@ -989,12 +1364,89 @@ function filterBrands() {
             });
         }
 
+        function showCheckStatus() {
+            const root = document.getElementById('appRoot');
+
+            root.innerHTML = `
+                <div style="padding:20px;">
+                    <h2 style="margin-bottom:15px;">Cek Status Pesanan</h2>
+
+                    <div class="form-group">
+                        <label>Order ID</label>
+                        <input
+                            id="statusOrderId"
+                            placeholder="Contoh: TDP-20260922-112657136"
+                            style="width:100%;padding:12px;border-radius:8px;border:1px solid #ddd;"
+                        >
+                    </div>
+
+                    <button
+                        onclick="checkOrderStatus()"
+                        style="margin-top:12px;padding:12px 20px;border:0;border-radius:8px;background:var(--brand-primary);color:#fff;font-weight:700;">
+                        Cek Status
+                    </button>
+
+                    <div id="statusResult" style="margin-top:20px;"></div>
+                </div>
+            `;
+        }
+
+
+        async function checkOrderStatus() {
+            const orderId = document.getElementById('statusOrderId').value.trim();
+            const resultBox = document.getElementById('statusResult');
+
+            if (!orderId) {
+                alert("Masukkan Order ID terlebih dahulu.");
+                return;
+            }
+
+            resultBox.innerHTML = "Memeriksa status...";
+
+            try {
+                const res = await fetch('http://' + '192.168.100.100:3000/api/order/status/' + orderId);
+                const data = await res.json();
+
+                if (!data.success) {
+                    resultBox.innerHTML = `
+                        <div style="color:red;">
+                            ${data.message}
+                        </div>
+                    `;
+                    return;
+                }
+
+                const order = data.order;
+
+                resultBox.innerHTML = `
+                    <div style="background:#f5f5f5;padding:15px;border-radius:10px;">
+                        <b>Produk:</b> ${order.product_name}<br>
+                        <b>Tujuan:</b> ${order.target}<br>
+                        <b>Nominal:</b> Rp ${Number(order.amount).toLocaleString('id-ID')}<br>
+                        <b>Status:</b> ${order.status}<br>
+                        <b>SN:</b> ${order.sn || '-'}
+                    </div>
+                `;
+
+            } catch (err) {
+                resultBox.innerHTML = `
+                    <div style="color:red;">
+                        Gagal menghubungi server.
+                    </div>
+                `;
+            }
+        }
+
+
         function navClick(e, menuName) {
             e.preventDefault();
             document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
             e.currentTarget.classList.add('active');
+
             if(menuName === 'Beranda') {
                 renderHome();
+            } else if(menuName === 'Cek Status') {
+                showCheckStatus();
             } else {
                 alert("Menu Navigasi dipilih: " + menuName);
             }
@@ -1003,56 +1455,392 @@ function filterBrands() {
         let activeTransactionData = {};
         let isPostpaidInquired = false;
 
-        
-                function handleProductClick(sku, productName, price, isPostpaidCategory) {
-            const targetInput = document.getElementById("targetInput");
-            const targetVal = targetInput ? targetInput.value.trim() : "";
 
-            if (!targetVal || targetVal.length < 4) {
-                alert("Silakan masukkan Nomor Tujuan / ID Pelanggan terlebih dahulu (minimal 4 digit).");
-                if (targetInput) targetInput.focus();
-                return;
+                async function handleProductClick(
+    sku,
+    productName,
+    price,
+    isPostpaidCategory = false
+) {
+    const targetInput = document.getElementById("targetInput");
+
+    if (!targetInput) {
+        alert("Input nomor tujuan tidak ditemukan.");
+        return;
+    }
+
+    const target = String(targetInput.value || "").trim();
+
+    if (!target) {
+        alert(
+            isPostpaidCategory
+                ? "Masukkan nomor / ID pelanggan terlebih dahulu."
+                : "Masukkan nomor tujuan terlebih dahulu."
+        );
+        targetInput.focus();
+        return;
+    }
+
+    if (target.length < 4) {
+        alert("Nomor / ID tujuan terlalu pendek.");
+        targetInput.focus();
+        return;
+    }
+
+    /*
+     * =========================================================
+     * PASCABAYAR
+     * =========================================================
+     *
+     * Harga katalog pascabayar bukan nominal tagihan pelanggan.
+     * Karena itu WAJIB inquiry terlebih dahulu.
+     */
+    if (isPostpaidCategory) {
+        const originalText = document.activeElement?.innerText || "";
+
+        try {
+            const cards = document.querySelectorAll(".product-card");
+            cards.forEach(card => {
+                card.style.pointerEvents = "none";
+                card.style.opacity = "0.65";
+            });
+
+            const response = await fetch(
+                "http://" + "192.168.100.100:3000/api/inquiry-pasca",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        sku: String(sku || "").trim(),
+                        customerNo: target
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message ||
+                    result.data?.message ||
+                    "Inquiry tagihan gagal."
+                );
             }
 
-            if (!isPostpaidCategory && price <= 0) {
-                alert("Harga produk tidak valid.");
-                return;
+            const data = result.data || {};
+
+            /*
+             * Digiflazz memakai beberapa field penting:
+             * customer_name
+             * customer_no
+             * periode
+             * admin
+             * price
+             * selling_price
+             * rc
+             * status
+             */
+
+            const inquiryPrice = Number(
+                data.selling_price ??
+                data.price ??
+                0
+            );
+
+            if (!inquiryPrice || inquiryPrice <= 0) {
+                throw new Error(
+                    data.message ||
+                    "Digiflazz tidak mengembalikan nominal tagihan."
+                );
             }
 
-            openCheckoutModal(sku, productName, price, isPostpaidCategory, targetVal);
-        }
-
-function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
+            /*
+             * Simpan hasil inquiry untuk checkout berikutnya.
+             */
             activeTransactionData = {
-                sku: sku,
-                productName: productName,
-                price: price,
-                target: targetVal,
-                isPostpaid: isPostpaid
+                sku: String(data.buyer_sku_code || sku || "").trim(),
+                productName: String(
+                    productName ||
+                    data.product_name ||
+                    sku ||
+                    "Tagihan Pascabayar"
+                ),
+                price: inquiryPrice,
+                target: String(
+                    data.customer_no ||
+                    target
+                ).trim(),
+                isPostpaid: true,
+
+                inquiryRefId: String(
+                    data.ref_id ||
+                    result.ref_id ||
+                    ""
+                ).trim(),
+
+                customerName: String(
+                    data.customer_name ||
+                    "-"
+                ).trim(),
+
+                periode: String(
+                    data.periode ||
+                    ""
+                ).trim(),
+
+                admin: Number(
+                    data.admin || 0
+                ),
+
+                inquiryData: data
             };
 
-            isPostpaidInquired = false;
-            document.getElementById('summaryProduct').innerText = `${productName} ${price > 0 ? '(Rp ' + price.toLocaleString('id-ID') + ')' : ''}`;
-            document.getElementById('summaryTarget').innerText = `Tujuan / ID: ${targetVal}`;
-            document.getElementById('whatsappInput').value = '';
+            /*
+             * Buka modal checkout memakai hasil inquiry.
+             * Harga di sini SUDAH berasal dari hasil inquiry,
+             * bukan harga kartu katalog.
+             */
+            openCheckoutModal(
+                activeTransactionData.sku,
+                activeTransactionData.productName,
+                activeTransactionData.price,
+                activeTransactionData.target,
+                true,
+                activeTransactionData
+            );
 
-            if (isPostpaid) {
-                document.getElementById('postpaidDetails').style.display = 'block';
-                document.getElementById('pCustomerName').innerText = "Validasi Mandiri";
-                document.getElementById('pAmount').innerText = price > 0 ? "Rp " + price.toLocaleString('id-ID') : "Rp 0";
-                document.getElementById('qrisSection').style.display = 'block';
-                document.getElementById('modalSubmitBtn').innerText = "Konfirmasi Pembayaran";
-                generateDynamicQRIS(price > 0 ? price : 10000);
-            } else {
-                document.getElementById('postpaidDetails').style.display = 'none';
-                document.getElementById('qrisSection').style.display = 'block';
-                document.getElementById('modalSubmitBtn').innerText = "Bayar Sekarang";
-                generateDynamicQRIS(price);
-            }
+        } catch (error) {
+            console.error(
+                "[INQUIRY PASCABAYAR]",
+                error
+            );
 
-            document.getElementById('actionModal').classList.add('active');
-            setTimeout(() => document.getElementById('whatsappInput').focus(), 150);
+            alert(
+                "❌ Inquiry tagihan gagal.\n\n" +
+                (error.message || "Silakan coba lagi.")
+            );
+        } finally {
+            const cards = document.querySelectorAll(".product-card");
+            cards.forEach(card => {
+                card.style.pointerEvents = "";
+                card.style.opacity = "";
+            });
         }
+
+        return;
+    }
+
+    /*
+     * =========================================================
+     * PRABAYAR
+     * =========================================================
+     */
+    if (!price || Number(price) <= 0) {
+        alert("Harga produk tidak tersedia.");
+        return;
+    }
+
+    openCheckoutModal(
+        sku,
+        productName,
+        Number(price),
+        target,
+        false
+    );
+}
+
+function openCheckoutModal(
+    sku,
+    productName,
+    price,
+    targetVal,
+    isPostpaid = false,
+    inquiryData = null
+) {
+    /*
+     * Untuk pascabayar, inquiryData sudah berisi:
+     * inquiryRefId
+     * customerName
+     * periode
+     * admin
+     * inquiryData
+     *
+     * Jangan menimpa hasil inquiry dengan data kosong.
+     */
+
+    if (isPostpaid && inquiryData) {
+        activeTransactionData = {
+            sku: String(inquiryData.sku || sku || "").trim(),
+            productName: String(
+                inquiryData.productName ||
+                productName ||
+                "Tagihan Pascabayar"
+            ).trim(),
+
+            price: Number(
+                inquiryData.price ??
+                price ??
+                0
+            ),
+
+            target: String(
+                inquiryData.target ||
+                targetVal ||
+                ""
+            ).trim(),
+
+            isPostpaid: true,
+
+            inquiryRefId: String(
+                inquiryData.inquiryRefId ||
+                ""
+            ).trim(),
+
+            customerName: String(
+                inquiryData.customerName ||
+                "-"
+            ).trim(),
+
+            periode: String(
+                inquiryData.periode ||
+                ""
+            ).trim(),
+
+            admin: Number(
+                inquiryData.admin ||
+                0
+            ),
+
+            inquiryData:
+                inquiryData.inquiryData || null
+        };
+    } else {
+        /*
+         * Alur prabayar tetap seperti sebelumnya.
+         */
+        activeTransactionData = {
+            sku: sku,
+            productName: productName,
+            price: Number(price || 0),
+            target: targetVal,
+            isPostpaid: false
+        };
+    }
+
+    isPostpaidInquired = !!(
+        isPostpaid &&
+        activeTransactionData.inquiryRefId
+    );
+
+    const finalPrice = Number(
+        activeTransactionData.price || 0
+    );
+
+    document.getElementById(
+        'summaryProduct'
+    ).innerText =
+        `${activeTransactionData.productName}` +
+        (
+            finalPrice > 0
+                ? ` (Rp ${finalPrice.toLocaleString('id-ID')})`
+                : ''
+        );
+
+    document.getElementById(
+        'summaryTarget'
+    ).innerText =
+        `Tujuan / ID: ${activeTransactionData.target}`;
+
+    document.getElementById(
+        'whatsappInput'
+    ).value = '';
+
+    if (isPostpaid) {
+        const customerName =
+            activeTransactionData.customerName || "-";
+
+        const periode =
+            activeTransactionData.periode || "";
+
+        const admin =
+            Number(activeTransactionData.admin || 0);
+
+        document.getElementById(
+            'postpaidDetails'
+        ).style.display = 'block';
+
+        document.getElementById(
+            'pCustomerName'
+        ).innerText = customerName;
+
+        document.getElementById(
+            'pAmount'
+        ).innerText =
+            finalPrice > 0
+                ? "Rp " +
+                  finalPrice.toLocaleString('id-ID')
+                : "Rp 0";
+
+        /*
+         * Jika ada elemen periode di UI yang sudah tersedia,
+         * isi tanpa mengharuskan elemen tersebut ada.
+         */
+        const periodeElement =
+            document.getElementById('pPeriode');
+
+        if (periodeElement) {
+            periodeElement.innerText =
+                periode || "-";
+        }
+
+        const adminElement =
+            document.getElementById('pAdmin');
+
+        if (adminElement) {
+            adminElement.innerText =
+                "Rp " +
+                admin.toLocaleString('id-ID');
+        }
+
+        document.getElementById(
+            'qrisSection'
+        ).style.display = 'block';
+
+        document.getElementById(
+            'modalSubmitBtn'
+        ).innerText =
+            "Konfirmasi Pembayaran";
+
+    } else {
+        document.getElementById(
+            'postpaidDetails'
+        ).style.display = 'none';
+
+        document.getElementById(
+            'qrisSection'
+        ).style.display = 'block';
+
+        document.getElementById(
+            'modalSubmitBtn'
+        ).innerText =
+            "Bayar Sekarang";
+    }
+
+    document.getElementById(
+        'actionModal'
+    ).classList.add('active');
+
+    setTimeout(() => {
+        const input =
+            document.getElementById('whatsappInput');
+
+        if (input) {
+            input.focus();
+        }
+    }, 150);
+}
 
         function closeModalDirect() {
             document.getElementById('actionModal').classList.remove('active');
@@ -1064,40 +1852,243 @@ function openCheckoutModal(sku, productName, price, isPostpaid, targetVal) {
             }
         }
 
-        function generateDynamicQRIS(nominal) {
+        function generateDynamicQRIS(qrisImage) {
             const container = document.getElementById('qrcodeTarget');
-            container.innerHTML = "";
-            const qrisPayloadString = `TOOPAY-DIGI-QRIS-${activeTransactionData.target}-${nominal}`; 
-            new QRCode(container, {
-                text: qrisPayloadString,
-                width: 150,
-                height: 150,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        }
 
-        // Fungsi transaksi Client-Side murni untuk GitHub Pages (Tanpa backend Vercel)
-        function processAction() {
-            const whatsapp = document.getElementById('whatsappInput').value;
-            if (!whatsapp) {
-                alert("Mohon masukkan nomor WhatsApp terlebih dahulu.");
-                document.getElementById('whatsappInput').focus();
+            if (!container || !qrisImage) {
+                console.error("Gambar QRIS tidak tersedia.");
+                return false;
+            }
+
+            container.innerHTML = `
+                <img
+                    id="qrisImageTarget"
+                    src="${qrisImage}"
+                    style="width:250px;max-width:100%;border-radius:8px;"
+                >
+            `;
+
+            return true;
+        }
+        async function shareQRIS() {
+            const img = document.getElementById('qrisImageTarget');
+
+            if (!img || !img.src) {
+                alert("QRIS belum tersedia.");
                 return;
             }
 
-            const submitBtn = document.getElementById('modalSubmitBtn');
-            submitBtn.disabled = true;
+            try {
+                const response = await fetch(img.src);
+                const blob = await response.blob();
 
-            setTimeout(() => {
-                alert(`Pesanan Berhasil Dicatat!\n\nProduk: ${activeTransactionData.productName}\nTujuan: ${activeTransactionData.target}\nNo WhatsApp: ${whatsapp}\n\nSilakan lakukan pembayaran via QRIS yang tertera.`);
-                submitBtn.disabled = false;
-                closeModalDirect();
-                renderHome();
-            }, 600);
+                const file = new File(
+                    [blob],
+                    'QRIS-TOOPAY-DIGI.png',
+                    { type: 'image/png' }
+                );
+
+                if (
+                    navigator.share &&
+                    navigator.canShare &&
+                    navigator.canShare({ files: [file] })
+                ) {
+                    await navigator.share({
+                        title: 'QRIS TOOPAY-DIGI',
+                        text: 'Silakan lakukan pembayaran melalui QRIS TOOPAY-DIGI.',
+                        files: [file]
+                    });
+                } else {
+                    const link = document.createElement('a');
+
+                    link.href = img.src;
+                    link.download = 'QRIS-TOOPAY-DIGI.png';
+                    link.click();
+
+                    alert("Browser tidak mendukung share langsung. QRIS disimpan sebagai gambar.");
+                }
+
+            } catch (error) {
+                console.error("Gagal share QRIS:", error);
+                alert("QRIS tidak dapat dibagikan.");
+            }
         }
 
+        // Fungsi transaksi Client-Side untuk GitHub Pages
+async function processAction() {
+    const whatsappInput = document.getElementById('whatsappInput');
+    const whatsapp = whatsappInput
+        ? whatsappInput.value.trim()
+        : '';
+
+    if (!activeTransactionData || !activeTransactionData.sku) {
+        alert("Data transaksi tidak tersedia.");
+        return;
+    }
+
+    const submitBtn =
+        document.getElementById('modalSubmitBtn');
+
+    const originalText = submitBtn.innerText;
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Menyiapkan QRIS...";
+
+    try {
+        const isPostpaid =
+            activeTransactionData.isPostpaid === true;
+
+        const payload = {
+            sku: String(
+                activeTransactionData.sku || ""
+            ).trim(),
+
+            productName: String(
+                activeTransactionData.productName || ""
+            ).trim(),
+
+            target: String(
+                activeTransactionData.target || ""
+            ).trim(),
+
+            amount: Number(
+                activeTransactionData.price || 0
+            ),
+
+            whatsapp: whatsapp,
+
+            isPostpaid: isPostpaid,
+
+            inquiryRefId: isPostpaid
+                ? String(
+                    activeTransactionData.inquiryRefId || ""
+                ).trim()
+                : null,
+
+            customerName: isPostpaid
+                ? String(
+                    activeTransactionData.customerName || ""
+                ).trim()
+                : "",
+
+            inquiryData: isPostpaid
+                ? (
+                    activeTransactionData.inquiryData ||
+                    null
+                )
+                : null
+        };
+
+        if (!payload.sku || !payload.target) {
+            throw new Error(
+                "Data produk atau target transaksi tidak lengkap."
+            );
+        }
+
+        if (!Number.isFinite(payload.amount) ||
+            payload.amount <= 0) {
+            throw new Error(
+                "Nominal transaksi tidak valid."
+            );
+        }
+
+        if (isPostpaid && !payload.inquiryRefId) {
+            throw new Error(
+                "Referensi inquiry tagihan tidak ditemukan. " +
+                "Silakan ulangi cek tagihan."
+            );
+        }
+
+        const response = await fetch(
+            'http://' +
+            '192.168.100.100:3000/api/order',
+            {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body: JSON.stringify(payload)
+            }
+        );
+
+        let result;
+
+        try {
+            result = await response.json();
+        } catch (jsonError) {
+            throw new Error(
+                "Backend memberikan respons yang tidak valid."
+            );
+        }
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.message ||
+                "Gagal membuat order."
+            );
+        }
+
+        activeTransactionData.orderId =
+            result.order.order_id;
+
+        activeTransactionData.qrisPayload =
+            result.qris;
+
+        const qrisReady =
+            generateDynamicQRIS(
+                result.qrisImage
+            );
+
+        if (!qrisReady) {
+            throw new Error(
+                "QRIS gagal ditampilkan."
+            );
+        }
+
+        document.getElementById(
+            'qrisSection'
+        ).style.display = 'block';
+
+        submitBtn.innerText =
+            "QRIS Siap — Silakan Bayar";
+
+        alert(
+            `Order berhasil dibuat.\n\n` +
+            `Order ID: ${
+                result.order.order_id
+            }\n` +
+            `Nominal: Rp ${
+                Number(
+                    result.order.amount
+                ).toLocaleString('id-ID')
+            }\n\n` +
+            `Silakan lakukan pembayaran melalui ` +
+            `QRIS yang tampil.`
+        );
+
+    } catch (error) {
+        console.error(
+            "Gagal membuat order:",
+            error
+        );
+
+        alert(
+            "Gagal membuat order.\n\n" +
+            error.message +
+            "\n\n" +
+            "Pastikan server backend Termux sedang berjalan."
+        );
+
+        submitBtn.innerText =
+            originalText;
+
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
         window.addEventListener("popstate", function(event) {
             const state = event.state;
 
