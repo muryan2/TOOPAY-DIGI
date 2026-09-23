@@ -631,22 +631,36 @@
                 </div>
 
                 <div id="qrisSection" style="display: none; text-align: center; margin-bottom: 15px;">
-                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--brand-primary); margin-bottom: 8px;">PEMBAYARAN QRIS</div>
-<div style="font-size: 0.85rem; color: #555; margin-bottom: 10px;">
-    Bagikan QRIS ke eWallet atau M-Banking Anda untuk melanjutkan pembayaran.
-</div>
-                    <div style="background: #fff; padding: 10px; display: inline-block; border: 1px solid var(--border-clr); border-radius: 8px;">
-                        <div id="qrcodeTarget"></div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--brand-primary); margin-bottom: 8px;">
+                        PEMBAYARAN QRIS
                     </div>
 
-                    <div style="margin-top: 10px;">
-                        <button type="button"
-                                id="shareQrisBtn"
-                                onclick="shareQRIS()"
-                                style="border: 0; border-radius: 8px; padding: 10px 16px; font-weight: 700; cursor: pointer; background: var(--brand-primary); color: #fff;">
-                            <i class="fa-solid fa-share-nodes"></i>
-                            Bagikan QRIS Untuk Bayar
-                        </button>
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-size: 0.72rem; color: #78909c; font-weight: 700; letter-spacing: .4px;">
+                            TOTAL BAYAR
+                        </div>
+                        <div id="qrisTotalAmount"
+                             style="font-size: 1.25rem; font-weight: 800; color: #d32f2f; margin-top: 2px;">
+                            -
+                        </div>
+                    </div>
+
+                    <div id="qrisLoading"
+                         style="background: #f7f9fa; padding: 24px 14px; border: 1px dashed var(--border-clr); border-radius: 10px; color: #78909c; font-size: 0.82rem;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <div style="margin-top: 7px; font-weight: 600;">
+                            Menyiapkan QRIS...
+                        </div>
+                    </div>
+
+                    <div id="qrisImageBox"
+                         style="display: none; background: #fff; padding: 10px; border: 1px solid var(--border-clr); border-radius: 10px;">
+                        <div id="qrcodeTarget"></div>
+
+                        <div style="margin-top: 8px; font-size: 0.75rem; color: #607d8b;">
+                            <i class="fa-solid fa-hand-pointer"></i>
+                            Tap gambar QRIS untuk membagikan ke aplikasi pembayaran
+                        </div>
                     </div>
                 </div>
 
@@ -1828,6 +1842,28 @@ function openCheckoutModal(
             "Bayar Sekarang";
     }
 
+    // Reset tampilan QRIS untuk transaksi baru
+    const qrisLoading = document.getElementById('qrisLoading');
+    const qrisImageBox = document.getElementById('qrisImageBox');
+    const qrisTarget = document.getElementById('qrcodeTarget');
+    const qrisTotal = document.getElementById('qrisTotalAmount');
+
+    if (qrisLoading) {
+        qrisLoading.style.display = 'block';
+    }
+
+    if (qrisImageBox) {
+        qrisImageBox.style.display = 'none';
+    }
+
+    if (qrisTarget) {
+        qrisTarget.innerHTML = '';
+    }
+
+    if (qrisTotal) {
+        qrisTotal.innerText = '-';
+    }
+
     document.getElementById(
         'actionModal'
     ).classList.add('active');
@@ -1854,6 +1890,8 @@ function openCheckoutModal(
 
         function generateDynamicQRIS(qrisImage) {
             const container = document.getElementById('qrcodeTarget');
+            const imageBox = document.getElementById('qrisImageBox');
+            const loading = document.getElementById('qrisLoading');
 
             if (!container || !qrisImage) {
                 console.error("Gambar QRIS tidak tersedia.");
@@ -1864,9 +1902,19 @@ function openCheckoutModal(
                 <img
                     id="qrisImageTarget"
                     src="${qrisImage}"
-                    style="width:250px;max-width:100%;border-radius:8px;"
+                    alt="QRIS TOOPAY-DIGI"
+                    onclick="shareQRIS()"
+                    style="display:block;width:250px;max-width:100%;height:auto;margin:0 auto;border-radius:8px;cursor:pointer;"
                 >
             `;
+
+            if (loading) {
+                loading.style.display = 'none';
+            }
+
+            if (imageBox) {
+                imageBox.style.display = 'block';
+            }
 
             return true;
         }
@@ -2037,6 +2085,20 @@ async function processAction() {
         activeTransactionData.qrisPayload =
             result.qris;
 
+        // Nominal final QRIS dari backend.
+        // Sudah termasuk margin + kode unik.
+        const finalQrisAmount =
+            Number(result.order.amount || 0);
+
+        const qrisTotalElement =
+            document.getElementById('qrisTotalAmount');
+
+        if (qrisTotalElement && finalQrisAmount > 0) {
+            qrisTotalElement.innerText =
+                "Rp " +
+                finalQrisAmount.toLocaleString('id-ID');
+        }
+
         const qrisReady =
             generateDynamicQRIS(
                 result.qrisImage
@@ -2055,19 +2117,7 @@ async function processAction() {
         submitBtn.innerText =
             "QRIS Siap — Silakan Bayar";
 
-        alert(
-            `Order berhasil dibuat.\n\n` +
-            `Order ID: ${
-                result.order.order_id
-            }\n` +
-            `Nominal: Rp ${
-                Number(
-                    result.order.amount
-                ).toLocaleString('id-ID')
-            }\n\n` +
-            `Silakan lakukan pembayaran melalui ` +
-            `QRIS yang tampil.`
-        );
+
 
     } catch (error) {
         console.error(
@@ -2084,9 +2134,12 @@ async function processAction() {
 
         submitBtn.innerText =
             originalText;
+        submitBtn.disabled = false;
 
     } finally {
-        submitBtn.disabled = false;
+        // Jangan mengaktifkan kembali tombol di sini.
+        // Jika transaksi berhasil, tombol tetap terkunci.
+        // Jika gagal, catch akan mengaktifkannya kembali.
     }
 }
         window.addEventListener("popstate", function(event) {
